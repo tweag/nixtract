@@ -46,28 +46,30 @@ rec {
   */
   getValueAtPath =
     collection: attributePath:
-    let recurse =
-      collection: pathList:
-      let
-        x = builtins.head pathList;
-        value =
-          if nixpkgs.lib.isAttrs collection
-          then collection.${x}
-          else
-            if nixpkgs.lib.isList collection
-            then
-              let index = nixpkgs.lib.toIntBase10 x;
-              in builtins.elemAt collection index
-            else builtins.throw "Trying to follow path in neither an attribute set nor a list";
-      in
-      if builtins.length pathList > 1 then
+    let
+      recurse =
+        collection: pathList:
         let
-          # need to skip an item, see `builtins.split` doc
-          xs = builtins.tail (builtins.tail pathList);
+          x = builtins.head pathList;
+          value =
+            if nixpkgs.lib.isAttrs collection
+            then collection.${x}
+            else
+              if nixpkgs.lib.isList collection
+              then
+                let index = nixpkgs.lib.toIntBase10 x;
+                in builtins.elemAt collection index
+              else builtins.throw "Trying to follow path in neither an attribute set nor a list";
         in
-        recurse value xs
-      else value;
-    in recurse collection (builtins.split "\\." attributePath);
+        if builtins.length pathList > 1 then
+          let
+            # need to skip an item, see `builtins.split` doc
+            xs = builtins.tail (builtins.tail pathList);
+          in
+          recurse value xs
+        else value;
+    in
+    recurse collection (builtins.split "\\." attributePath);
 
   /* Utility function for safe evaluation of any value, null if evaluation fails
   */

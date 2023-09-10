@@ -1,13 +1,13 @@
 /* Find the attribute paths to derivations directly available in a flake.
 
-Results are written to stderr, prefixed by `trace: `, as a JSON dict with key "foundDrvs".
+  Results are written to stderr, prefixed by `trace: `, as a JSON dict with key "foundDrvs".
 
-Args (as environment variables):
-    TARGET_FLAKE_REF: flake reference to evaluate
-    TARGET_SYSTEM: system to evaluate
+  Args (as environment variables):
+  TARGET_FLAKE_REF: flake reference to evaluate
+  TARGET_SYSTEM: system to evaluate
 
-Example:
-TARGET_FLAKE_REF="nixpkgs" TARGET_SYSTEM="x86_64-linux" nix eval --json --file ./find-attribute-paths.nix
+  Example:
+  TARGET_FLAKE_REF="nixpkgs" TARGET_SYSTEM="x86_64-linux" nix eval --json --file ./find-attribute-paths.nix
 */
 
 let
@@ -49,11 +49,13 @@ let
     if nixpkgs.lib.isDerivation value then
     # yield found derivation
     # if it has multiple output derivations, yield them instead
-      let foundDrvs =
-        if value ? outputs
-        then (map (name: describeDrv value.${name} // { attributePath = attributePath + ".${name}"; }) value.outputs)
-        else [ ((describeDrv value) // { inherit attributePath; }) ];
-      in builtins.trace (builtins.toJSON { inherit foundDrvs; }) foundDrvs
+      let
+        foundDrvs =
+          if value ? outputs
+          then (map (name: describeDrv value.${name} // { attributePath = attributePath + ".${name}"; }) value.outputs)
+          else [ ((describeDrv value) // { inherit attributePath; }) ];
+      in
+      builtins.trace (builtins.toJSON { inherit foundDrvs; }) foundDrvs
     else
     # recurse when the current value is an attribute set, otherwise stop
       if (nixpkgs.lib.isAttrs value) && (value.recurseForDerivations or false)

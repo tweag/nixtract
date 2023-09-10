@@ -41,13 +41,13 @@ in
 
   # path to the realized (=built) derivation
   # note: we can't name it `outPath` because serialization would only output it instead of dict, see Nix `toString` docs
-  outputPath = 
+  outputPath =
     # TODO meaningfully represent when it's not the right platform (instead of null)
     lib.safePlatformDrvEval
       targetSystem
       (drv: drv.outPath)
       targetValue;
-  outputs = map (name: { inherit name; outputPath = lib.safePlatformDrvEval targetSystem (drv: drv.outPath) targetValue.${name}; }) (targetValue.outputs or []);
+  outputs = map (name: { inherit name; outputPath = lib.safePlatformDrvEval targetSystem (drv: drv.outPath) targetValue.${name}; }) (targetValue.outputs or [ ]);
   buildInputs = nixpkgs.lib.lists.flatten
     (map
       (inputType:
@@ -63,8 +63,8 @@ in
             # only keep derivations in inputs
             # TODO include path objects
             builtins.filter
-            (elem: nixpkgs.lib.isDerivation elem.value)
-            (lib.enumerate (targetValue.${inputType} or [ ]))
+              (elem: nixpkgs.lib.isDerivation elem.value)
+              (lib.enumerate (targetValue.${inputType} or [ ]))
           )
       )
       [ "nativeBuildInputs" "buildInputs" "propagatedBuildInputs" ]
