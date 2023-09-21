@@ -52,6 +52,18 @@ you can specify a file path directly instead
 $ nixtract derivations.jsonl
 ```
 
+in order to extract from a specific flake, use `--target-flake-ref`:
+
+```console
+$ nixtract --target-flake-ref 'github:nixos/nixpkgs/23.05' -
+```
+
+in order to extract for a specific system, use `--target-system`:
+
+```console
+$ nixtract --target-system 'x86_64-darwin' -
+```
+
 ### Understanding the output
 
 `nixtract` evaluates Nix code to recursively find all derivations in a flake.
@@ -73,4 +85,26 @@ $ python -c 'import nixtract.model; print(nixtract.model.Derivation.schema_json(
 
 ```console
 $ poetry install
+```
+
+### Under the hood
+
+The overall architecture inside is described in `nixtract/cli.py`:
+
+```
+Calling this tool starts a subprocess that list top-level derivations (outputPath + attribute path) to its stderr pipe, see `./find-attribute-paths.nix`.
+This pipe is consumed in a thread (`finder_output_reader`) that reads each line and feeds found attribute paths to a queue.
+This queue is consumed by another thread (`queue_processor`) that will call a subprocess that describes the derivation (name, version, license, dependencies, ...), see `./describe-derivation.nix`.
+When describing a derivation, if dependencies are found and have not been already queued for processing, they are added to the queue as well, which makes us explore the entire depth of the graph.
+
+The whole system stops once
+- all top-level attribute paths have been found
+- all derivations from that search have been processed
+- all dependencies have been processed
+
+Glossary:
+- output path: full path of the realization of the derivation in the Nix store.
+               e.g. /nix/store/py9jjqsgsya5b9cpps64gchaj8lq2h5i-python3.10-versioneer-0.28
+- attribute path: path from the root attribute set to get the desired value.
+                  e.g. python3Derivations.versioneer
 ```
