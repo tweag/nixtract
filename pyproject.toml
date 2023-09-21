@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "nixtract"
-version = "1.0.0"
+version = "0.1.0"
 description = "A CLI tool to extract the graph of derivations from a Nix flake."
 authors = [
     "Guillaume Desforges <guillaume.desforges@tweag.io>",
