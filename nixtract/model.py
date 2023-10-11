@@ -12,11 +12,21 @@ class NixpkgsMetadata(BaseModel):
     """Derivation metadata defined by nixpkgs specifically."""
 
     pname: str | None = Field(
-        default=None, description="The pname attribute of the Nix derivation"
+        default=None,
+        description="The pname attribute of the Nix derivation",
     )
-    version: str = Field(description="The derivation's version")
-    broken: bool = Field(description="Flag indicating whether the derivation is broken")
-    license: str = Field(description="The derivation's license")
+    version: str | None = Field(
+        default=None,
+        description="The derivation's version",
+    )
+    broken: bool | None = Field(
+        default=None,
+        description="Flag indicating whether the derivation is broken",
+    )
+    license: str | None = Field(
+        default=None,
+        description="The derivation's license",
+    )
 
 
 class Output(BaseModel):
@@ -36,7 +46,7 @@ class ParsedName(BaseModel):
     name: str | None = Field(
         default=None, description="The derivation name of the Nix derivation"
     )
-    version: str = Field(description="The version of the Nix derivation")
+    version: str | None = Field(description="The version of the Nix derivation")
 
 
 class BuildInputType(Enum):
