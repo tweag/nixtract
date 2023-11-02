@@ -171,3 +171,6 @@ cython_debug/
 # Other data
 tmp/
 .nix/
+
+# Rust
+/target
