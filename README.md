@@ -9,9 +9,16 @@ A CLI tool to extract the graph of derivations from a Nix flake.
 * Nix >= 2.4
   * experimental feature `nix-command` needs to be enabled: [Nix command - NixOS Wiki](https://nixos.wiki/wiki/Nix_command)
   * experimental feature `flakes` needs to be enabled: [Flakes - NixOS Wiki](https://nixos.wiki/wiki/Flakes)
-* Python >= 3.10
 
 ### Set up
+
+Get it using Nix
+
+```console
+$ nix shell github:tweag/nixtract
+```
+
+or install in your Python environment:
 
 ```console
 $ pip install git+https://github.com/tweag/nixtract.git
@@ -83,6 +90,7 @@ $ python -c 'import nixtract.model; print(nixtract.model.Derivation.schema_json(
 
 ### Set up
 
+Requires a Python environment (^3.10) and `poetry`.
 ```console
 $ poetry install
 ```
