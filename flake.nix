@@ -1,12 +1,12 @@
 {
   outputs = { flake-utils, nixpkgs, nix, ... }:
-    let
-      system = "x86_64-linux";
-      pkgs = nixpkgs.legacyPackages.${system};
-    in
-    {
-      packages.${system}.default = pkgs.poetry2nix.mkPoetryApplication {
-        projectDir = ./.;
-      };
-    };
+    flake-utils.lib.eachDefaultSystem (system:
+      let
+        pkgs = nixpkgs.legacyPackages.${system};
+      in
+      {
+        packages.default = pkgs.poetry2nix.mkPoetryApplication {
+          projectDir = ./.;
+        };
+      });
 }
