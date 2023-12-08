@@ -36,13 +36,17 @@ Usage: nixtract [OPTIONS] OUTFILE
   stdout.
 
 Options:
-  --target-flake-ref TEXT  The reference of the target Nix Flake
-  --target-system TEXT     The system in which to evaluate the derivations
-  --n-workers INTEGER      Count of workers to spawn to describe the stream of
-                           found derivations
-  --offline                Pass --offline to Nix commands
-  -v, --verbose            Increase verbosity
-  --help                   Show this message and exit.
+  --target-flake-ref TEXT       The reference of the target Nix Flake
+  --target-attribute-path TEXT  The attribute path of the provided
+                                attribute set to evaluate. If empty, the
+                                entire attribute set is evaluated
+  --target-system TEXT          The system in which to evaluate the
+                                derivations
+  --n-workers INTEGER           Count of workers to spawn to describe the
+                                stream of found derivations
+  --offline                     Pass --offline to Nix commands
+  -v, --verbose                 Increase verbosity
+  --help                        Show this message and exit.
 ```
 
 ### Extract nixpkgs graph of derivations
@@ -63,6 +67,12 @@ in order to extract from a specific flake, use `--target-flake-ref`:
 
 ```console
 $ nixtract --target-flake-ref 'github:nixos/nixpkgs/23.05' -
+```
+
+in order to extract from a specific attribute, use `--target-attribute`:
+
+```console
+$ nixtract --target-attribute-path 'haskellPackages.hello' -
 ```
 
 in order to extract for a specific system, use `--target-system`:
