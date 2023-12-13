@@ -4,10 +4,11 @@
 
   Args (as environment variables):
   TARGET_FLAKE_REF: flake reference to evaluate
+  TARGET_ATTRIBUTE_PATH: attribute to evaluate
   TARGET_SYSTEM: system to evaluate
 
   Example:
-  TARGET_FLAKE_REF="nixpkgs" TARGET_SYSTEM="x86_64-linux" nix eval --json --file ./find-attribute-paths.nix
+  TARGET_FLAKE_REF="nixpkgs" TARGET_ATTRIBUTE_PATH="haskellPackages.hello" TARGET_SYSTEM="x86_64-linux" nix eval --json --file ./find-attribute-paths.nix
 */
 
 let
@@ -16,11 +17,16 @@ let
 
   # Arguments have to be taken from environment when using `nix` command
   targetFlakeRef = builtins.getEnv "TARGET_FLAKE_REF";
+  targetAttributePath = builtins.getEnv "TARGET_ATTRIBUTE_PATH";
   targetSystem = builtins.getEnv "TARGET_SYSTEM";
 
   # Get pkgs
   targetFlake = builtins.getFlake targetFlakeRef;
   targetFlakePkgs = lib.getFlakePkgs targetFlake targetSystem;
+  targetRootValue =
+    if isNull targetAttributePath || targetAttributePath == ""
+    then targetFlakePkgs
+    else lib.getValueAtPath targetFlakePkgs targetAttributePath;
 
   # Describe briefly found derivation
   describeDrv = drv: {
@@ -66,4 +72,4 @@ let
   ;
 in
 # to prevent accumlutation in memory
-lib.collect (x: false) (builtins.mapAttrs (findRecursively "") targetFlakePkgs)
+lib.collect (x: false) (builtins.mapAttrs (findRecursively targetAttributePath) targetRootValue)

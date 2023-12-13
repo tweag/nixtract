@@ -246,6 +246,11 @@ def queue_processor(
     help="The reference of the target Nix Flake",
 )
 @click.option(
+    "--target-attribute-path",
+    default="",
+    help="The attribute path of the provided attribute set to evaluate",
+)
+@click.option(
     "--target-system",
     default="x86_64-linux",
     help="The system in which to evaluate the derivations",
@@ -270,6 +275,7 @@ def queue_processor(
 def cli(
     outfile: IO[str],
     target_flake_ref: str,
+    target_attribute_path: str,
     target_system: str,
     n_workers: int,
     offline: bool,
@@ -293,6 +299,7 @@ def cli(
         # arguments to the Nix expression can't be passed with `nix eval`
         # we use environment variables instead
         "TARGET_FLAKE_REF": str(target_flake_ref),
+        "TARGET_ATTRIBUTE_PATH": str(target_attribute_path),
         "TARGET_SYSTEM": str(target_system),
     }
     logger.info(
