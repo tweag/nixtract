@@ -11,6 +11,10 @@ def snake_case_to_camel_case(name: str):
 class NixpkgsMetadata(BaseModel):
     """Derivation metadata defined by nixpkgs specifically."""
 
+    description: str | None = Field(
+        default=None,
+        description="The description of the Nix derivation",
+    )
     pname: str | None = Field(
         default=None,
         description="The pname attribute of the Nix derivation",

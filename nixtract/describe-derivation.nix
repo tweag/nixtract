@@ -30,10 +30,11 @@ in
   attributePath = targetAttributePath;
   nixpkgsMetadata =
     {
-      pname = (builtins.tryEval (if targetValue ? pname then targetValue.pname else false)).value or null;
-      version = (builtins.tryEval (if targetValue ? version then targetValue.version else "")).value;
-      broken = (builtins.tryEval (if targetValue ? meta.broken then targetValue.meta.broken else false)).value;
-      license = (builtins.tryEval (if targetValue ? meta.license.fullName then targetValue.meta.license.fullName else "")).value;
+      description = (builtins.tryEval (targetValue.meta.description or "")).value;
+      pname = (builtins.tryEval (targetValue.pname or false)).value or null;
+      version = (builtins.tryEval (targetValue.version or "")).value;
+      broken = (builtins.tryEval (targetValue.meta.broken or false)).value;
+      license = (builtins.tryEval (targetValue.meta.license.fullName or "")).value;
     };
 
   # path to the evaluated derivation file
