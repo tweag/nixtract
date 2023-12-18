@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "nixtract"
+name = "nixtract-cli"
 version = "0.1.0"
 description = "A CLI tool to extract the graph of derivations from a Nix flake."
 authors = [
