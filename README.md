@@ -26,7 +26,7 @@ $ nix shell github:tweag/nixtract
 or install in your Python environment:
 
 ```console
-$ pip install git+https://github.com/tweag/nixtract.git
+$ pip install nixtract-cli
 ```
 
 ### Usage
