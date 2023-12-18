@@ -8,6 +8,21 @@ def snake_case_to_camel_case(name: str):
     return "".join([parts[0]] + [part.capitalize() for part in parts[1:]])
 
 
+class License(BaseModel):
+    """The license(s) of a Nix derivation"""
+
+    spdx_id: str | None = Field(
+        description="The SPDX Id of the license",
+    )
+    full_name: str | None = Field(
+        description="The descriptive full name of the license",
+    )
+
+    class Config:
+        alias_generator = snake_case_to_camel_case
+        allow_population_by_field_name = True
+
+
 class NixpkgsMetadata(BaseModel):
     """Derivation metadata defined by nixpkgs specifically."""
 
@@ -31,9 +46,9 @@ class NixpkgsMetadata(BaseModel):
         default=None,
         description="The derivation's homepage",
     )
-    license: str | None = Field(
+    licenses: list[License] | None = Field(
         default=None,
-        description="The derivation's license",
+        description="The derivation's license(s)",
     )
 
 
