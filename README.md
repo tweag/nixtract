@@ -1,6 +1,11 @@
+![Build](https://img.shields.io/github/actions/workflow/status/tweag/nixtract/ci.yml
+) [![Discord channel](https://img.shields.io/discord/1174731094726295632)](https://discord.gg/53XwX7Ft)
+
 # `nixtract`
 
 A CLI tool to extract the graph of derivations from a Nix flake.
+
+We [invite you](https://discord.gg/53XwX7Ft) to join our [Discord channel](https://discord.com/channels/1174731094726295632/1183682765212897280)! It's a great place to ask questions, share your ideas, and collaborate with other contributors.
 
 ## Usage
 
