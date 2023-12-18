@@ -1,4 +1,4 @@
-![Build](https://img.shields.io/github/actions/workflow/status/tweag/nixtract/ci.yml
+[![PyPI Latest Release](https://img.shields.io/pypi/v/nixtract-cli.svg)](https://pypi.org/project/nixtract-cli/) ![Build](https://img.shields.io/github/actions/workflow/status/tweag/nixtract/ci.yml
 ) [![Discord channel](https://img.shields.io/discord/1174731094726295632)](https://discord.gg/53XwX7Ft)
 
 # `nixtract`
