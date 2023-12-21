@@ -28,6 +28,17 @@ in
   name = targetValue.name;
   parsedName = (builtins.parseDrvName targetValue.name);
   attributePath = targetAttributePath;
+
+  src =
+    if targetValue ? src.gitRepoUrl && targetValue ? src.rev
+    then
+      {
+        gitRepoUrl = targetValue.src.gitRepoUrl or null;
+        rev = targetValue.src.rev or null;
+      }
+    else
+      null;
+
   nixpkgsMetadata =
     {
       description = (builtins.tryEval (targetValue.meta.description or "")).value;
