@@ -122,7 +122,6 @@ def visit(
 
         # if value is an attribute set, add its attributes to the queue
         for attr_name in value.keys():
-            _LOGGER.debug("attr_name: %s", attr_name)
             item_attribute_path = attribute_path + [attr_name]
             item_value = maybe_get_attr(value, attr_name)
             if item_value is not None:
