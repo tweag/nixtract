@@ -46,7 +46,7 @@ import nixtract
 @click.option(
     "--fast",
     is_flag=True,
-    help="Blazingly fast using C FFI bindings",
+    help="[EXPERIMENTAL] _Blazingly_ fast using C FFI bindings. See README to install.",
 )
 def cli(
     outfile: IO[str],

@@ -131,3 +131,28 @@ Glossary:
 - attribute path: path from the root attribute set to get the desired value.
                   e.g. python3Derivations.versioneer
 ```
+
+## Experimental: fast mode
+
+Fast mode uses latest Nix C API and its Python bindings.
+
+To install it, you need to follow more instructions:
+
+- make sure you have gcc and pkg-config installed
+  ```console
+  $ nix shell nixpkgs#gcc nixpkgs#pkg-config
+  ```
+- make the development Nix branch available
+  ```console
+  $ export PKG_CONFIG_PATH="$(nix build github:tweag/nix/nix-c-bindings#default.dev --no-link --print-out-paths)/lib/pkgconfig"
+  ```
+- install the "fast" extra
+  ```console
+  $ pip install nixtract-cli[fast]
+  ```
+
+For local development, you need to install with extras:
+
+```console
+$ poetry install -E fast
+```
