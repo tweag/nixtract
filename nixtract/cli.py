@@ -4,7 +4,6 @@ from typing import IO
 import click
 
 import nixtract
-import nixtract.subprocesses.extract
 
 
 @click.command()
@@ -39,10 +38,15 @@ import nixtract.subprocesses.extract
     help="Pass --offline to Nix commands",
 )
 @click.option(
-    "--verbose",
-    "-v",
+    "--log-level",
+    type=click.Choice(["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]),
+    help="Set the log level",
+    default="INFO",
+)
+@click.option(
+    "--fast",
     is_flag=True,
-    help="Increase verbosity",
+    help="Blazingly fast using C FFI bindings",
 )
 def cli(
     outfile: IO[str],
@@ -51,23 +55,39 @@ def cli(
     target_system: str,
     n_workers: int,
     offline: bool,
-    verbose: bool,
+    log_level: str,
+    fast: bool,
 ):
     """
     Extract the graph of derivations from a flake as JSONL.
 
     OUTFILE is the path to the output file to write to, use "-" to write to stdout.
     """
-    logger = logging.getLogger(__name__)
+    logger = logging.getLogger()
     logger.addHandler(logging.StreamHandler())
-    if verbose:
-        logger.setLevel(logging.INFO)
+    logger.setLevel(logging._nameToLevel[log_level])
 
-    nixtract.subprocesses.extract.extract(
-        outfile=outfile,
-        target_flake_ref=target_flake_ref,
-        target_system=target_system,
-        target_attribute_path=target_attribute_path,
-        n_workers=n_workers,
-        offline=offline,
-    )
+    if fast:
+        import nixtract.c_bindings.extract
+
+        if offline is True:
+            logger.warning("--offline is not used in fast mode")
+
+        nixtract.c_bindings.extract.extract(
+            outfile=outfile,
+            target_flake_ref=target_flake_ref,
+            target_system=target_system,
+            target_attribute_path=target_attribute_path,
+        )
+        return
+    else:
+        import nixtract.subprocesses.extract
+
+        nixtract.subprocesses.extract.extract(
+            outfile=outfile,
+            target_flake_ref=target_flake_ref,
+            target_attribute_path=target_attribute_path,
+            target_system=target_system,
+            n_workers=n_workers,
+            offline=offline,
+        )
