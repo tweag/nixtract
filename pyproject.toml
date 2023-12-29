@@ -1,0 +1,30 @@
+[tool.poetry]
+name = "nix-graph-explorer"
+version = "0.0.1"
+description = "A tool for visualizing nixtract Nix dependency graphs"
+authors = ["Dorran Howell <dorran.howell@tweag.io>"]
+readme = "README.md"
+
+[tool.poetry.scripts]
+nix-graph-explorer = 'nix_graph_explorer.cli:cli'
+
+[tool.poetry.dependencies]
+python = "^3.11"
+gremlinpython = "^3.7.1"
+click = "^8.1.7"
+backoff = "^2.2.1"
+async-timeout = "^4.0.3"
+requests = "^2.31.0"
+psutil = "^5.9.7"
+nixtract-cli = "^0.1.0"
+pydantic = "<2.0.0"
+
+[tool.poetry.group.dev.dependencies]
+fawltydeps = "^0.13.3"
+pyright = "^1.1.343"
+ruff = "^0.1.9"
+black = "^23.12.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
