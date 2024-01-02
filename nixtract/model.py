@@ -27,6 +27,10 @@ class NixpkgsMetadata(BaseModel):
         default=None,
         description="Flag indicating whether the derivation is broken",
     )
+    homepage: str | None = Field(
+        default=None,
+        description="The derivation's homepage",
+    )
     license: str | None = Field(
         default=None,
         description="The derivation's license",
