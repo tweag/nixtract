@@ -7,6 +7,7 @@
       {
         packages.default = pkgs.poetry2nix.mkPoetryApplication {
           projectDir = ./.;
+          meta.mainProgram = "nixtract";
         };
       });
 }
