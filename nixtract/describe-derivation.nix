@@ -34,6 +34,7 @@ in
       pname = (builtins.tryEval (targetValue.pname or false)).value or null;
       version = (builtins.tryEval (targetValue.version or "")).value;
       broken = (builtins.tryEval (targetValue.meta.broken or false)).value;
+      homepage = (builtins.tryEval (targetValue.meta.homepage or "")).value;
       license = (builtins.tryEval (targetValue.meta.license.fullName or "")).value;
     };
 
