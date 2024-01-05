@@ -31,9 +31,20 @@ rec {
 
   /* Packages in a flake are usually a flat attribute set in outputs, but legacy systems use `legacyPackages`
   */
-  getFlakePkgs = flake: targetSystem: flake.outputs.packages.${targetSystem} or flake.outputs.defaultPackage.${targetSystem} or flake.outputs.legacyPackages.${targetSystem} or { };
-
-
+  getFlakePkgs = flake: targetSystem:
+    # flake.outputs.packages.${targetSystem} or {} //
+    # flake.outputs.legacyPackages.${targetSystem} or {} //
+    # flake.outputs.apps.${targetSystem} or {} //
+    # flake.outputs.checks.${targetSystem} or {} //
+    # flake.outputs.hydraJobs.${targetSystem} or {} //
+    (nixpkgs.lib.optionalAttrs
+      (flake.outputs ? nixosConfigurations)
+      (builtins.mapAttrs (_: config: config.config.system.build.toplevel) flake.outputs.nixosConfigurations)
+    ) # // (nixpkgs.lib.optionalAttrs (flake.outputs ? formatter) {
+      # formatter = flake.outputs.formatter.${targetSystem};
+    # })
+    ;
+  
   /* Follow "attribute path" (split by dot) to access value in tree of nested attribute sets and lists
     Type: (attrs | list) -> str -> any
 
