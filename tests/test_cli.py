@@ -117,6 +117,13 @@ def test_direct_buildinput():
     assert pkg2_node.get("output_path") is not None
     assert pkg2_node.get("name") == "pkg2"
     assert pkg2_node.get("parsed_name", {}).get("name") == "pkg2"
+    assert (
+        pkg2_node.get("nixpkgs_metadata", {}).get("licenses")[0].get("spdx_id") == "MIT"
+    )
+    assert (
+        pkg2_node.get("nixpkgs_metadata", {}).get("licenses")[1].get("spdx_id")
+        == "Apache-2.0"
+    )
     assert len(pkg2_node.get("build_inputs")) >= 1
     pkg2_buildinput_pkg1 = next(
         (
@@ -133,6 +140,10 @@ def test_direct_buildinput():
     assert pkg1_node is not None
     assert pkg1_node.get("output_path") == pkg2_buildinput_pkg1["output_path"]
     assert pkg1_node.get("output_path") == pkg2_buildinput_pkg1["output_path"]
+    assert (
+        pkg1_node.get("nixpkgs_metadata", {}).get("licenses")[0].get("spdx_id")
+        == "GPL-2.0-or-later"
+    )
 
     # test behavior through logs
     # quite unstable, will do for now

@@ -35,7 +35,24 @@ in
       version = (builtins.tryEval (targetValue.version or "")).value;
       broken = (builtins.tryEval (targetValue.meta.broken or false)).value;
       homepage = (builtins.tryEval (targetValue.meta.homepage or "")).value;
-      license = (builtins.tryEval (targetValue.meta.license.fullName or "")).value;
+      licenses = (builtins.tryEval (
+        if builtins.isAttrs (targetValue.meta.license or null)
+        # In case the license attribute is not a list, we produce a singleton list to be consistent
+        then [{
+          spdxId = targetValue.meta.license.spdxId or "";
+          fullName = targetValue.meta.license.fullName or "";
+        }]
+        # In case the license attribute is a list
+        else if builtins.isList (targetValue.meta.license or null)
+        then
+          builtins.map
+            (l: {
+              spdxId = l.spdxId or "";
+              fullName = l.fullName or "";
+            })
+            targetValue.meta.license
+        else null
+      )).value;
     };
 
   # path to the evaluated derivation file
