@@ -35,7 +35,7 @@ in
       version = (builtins.tryEval (targetValue.version or "")).value;
       broken = (builtins.tryEval (targetValue.meta.broken or false)).value;
       homepage = (builtins.tryEval (targetValue.meta.homepage or "")).value;
-      license = (builtins.tryEval (
+      licenses = (builtins.tryEval (
         if builtins.isAttrs (targetValue.meta.license or null)
         # In case the license attribute is not a list, we produce a singleton list to be consistent
         then [{

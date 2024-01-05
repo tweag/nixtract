@@ -15,6 +15,7 @@
             mkdir -p $out/bin
             cp $src/* $out/bin
           '';
+          meta.license = pkgs.lib.licenses.gpl2Plus;
         };
 
         pkg2 = pkgs.stdenv.mkDerivation {
@@ -28,6 +29,7 @@
             mkdir -p $out/bin
             cp $src/* $out/bin
           '';
+          meta.license = with pkgs.lib; [ licenses.mit licenses.asl20 ];
         };
 
       in
