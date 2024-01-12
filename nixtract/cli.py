@@ -337,8 +337,12 @@ def cli(
     # available via their build inputs
     derivation_description_pool = multiprocessing.pool.ThreadPool(n_workers)
 
+    # we need to use a multiprocessing manager to make use of a MacOS-compatible Queue
+    # see issue #20
+    derivation_description_manager = multiprocessing.Manager()
+
     # we can't access the pool queue so we use our own (thanks encapsulation U_U)
-    derivation_description_queue = multiprocessing.Queue()
+    derivation_description_queue = derivation_description_manager.Queue()
     # we don't want to process the same derivation twice, so we use their output path to
     # check that
     queued_output_paths: set[str] = set()
