@@ -39,16 +39,16 @@ in
         if builtins.isAttrs (targetValue.meta.license or null)
         # In case the license attribute is not a list, we produce a singleton list to be consistent
         then [{
-          spdxId = targetValue.meta.license.spdxId or "";
-          fullName = targetValue.meta.license.fullName or "";
+          spdxId = targetValue.meta.license.spdxId or null;
+          fullName = targetValue.meta.license.fullName or null;
         }]
         # In case the license attribute is a list
         else if builtins.isList (targetValue.meta.license or null)
         then
           builtins.map
             (l: {
-              spdxId = l.spdxId or "";
-              fullName = l.fullName or "";
+              spdxId = l.spdxId or null;
+              fullName = l.fullName or null;
             })
             targetValue.meta.license
         else null
