@@ -8,6 +8,24 @@ def snake_case_to_camel_case(name: str):
     return "".join([parts[0]] + [part.capitalize() for part in parts[1:]])
 
 
+class Source(BaseModel):
+    """The source or `src` attribute of the derivation."""
+
+    git_repo_url: str | None = Field(
+        default=None,
+        description="The .git url of the source",
+    )
+    rev: str | None = Field(
+        default=None,
+        description="The revision of the url if relevant",
+    )
+
+    class Config:
+        use_enum_values = True
+        alias_generator = snake_case_to_camel_case
+        allow_population_by_field_name = True
+
+
 class License(BaseModel):
     """The license(s) of a Nix derivation"""
 
@@ -129,6 +147,10 @@ class Derivation(BaseModel):
     nixpkgs_metadata: NixpkgsMetadata | None = Field(
         default=None,
         description="Optional metadata specific to derivations from nixpkgs",
+    )
+    src: Source | None = Field(
+        default=None,
+        description="Source of the derivation",
     )
     build_inputs: list[BuildInput] = Field(
         description="The derivation's build inputs",
