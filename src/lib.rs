@@ -13,11 +13,13 @@ fn process(
     system: Option<&str>,
     attribute_path: &str,
     offline: &bool,
+    lib: &nix::lib::Lib,
 ) -> Vec<DerivationDescription> {
     log::debug!("Processing derivation: {:?}", attribute_path);
 
     // call describe_derivation to get the derivation description
-    let description = nix::describe_derivation(flake_ref, system, attribute_path, offline).unwrap();
+    let description =
+        nix::describe_derivation(flake_ref, system, attribute_path, offline, lib).unwrap();
 
     // use par_iter to call process on all children of this derivation
     let children: Vec<DerivationDescription> = description
@@ -46,6 +48,7 @@ fn process(
                     system,
                     &build_input.attribute_path,
                     offline,
+                    lib,
                 )
             }
         })
@@ -69,6 +72,9 @@ pub fn nixtract(
     let system = system.as_ref().map(AsRef::as_ref);
     let attribute_path = attribute_path.as_ref().map(AsRef::as_ref);
 
+    // Writes the `lib.nix` file to the tempdir and stores its path
+    let lib = nix::lib::Lib::new()?;
+
     log::info!(
         "Starting nixtract with flake_ref: {}, system: {}, attribute_path: {:?}",
         flake_ref,
@@ -82,7 +88,8 @@ pub fn nixtract(
         Arc::new(Mutex::new(std::collections::HashSet::new()));
 
     // call find_attribute_paths to get the initial set of derivations
-    let attribute_paths = nix::find_attribute_paths(flake_ref, system, attribute_path, offline)?;
+    let attribute_paths =
+        nix::find_attribute_paths(flake_ref, system, attribute_path, offline, &lib)?;
 
     // Combine all AttributePaths into a single Vec
     let mut derivations: Vec<FoundDrv> = Vec::new();
@@ -100,6 +107,7 @@ pub fn nixtract(
                 system,
                 &found_drv.attribute_path,
                 offline,
+                &lib,
             )
         })
         .flatten()
