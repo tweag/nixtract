@@ -14,8 +14,8 @@ let
 
   # Arguments have to be taken from environment when using `nix` command
   targetFlakeRef = builtins.getEnv "TARGET_FLAKE_REF";
-  targetSystem = builtins.getEnv "TARGET_SYSTEM";
   targetAttributePath = builtins.getEnv "TARGET_ATTRIBUTE_PATH";
+  targetSystem = let env = builtins.getEnv "TARGET_SYSTEM"; in if env == "" then builtins.currentSystem else env;
 
   # Get pkgs
   targetFlake = builtins.getFlake targetFlakeRef;
