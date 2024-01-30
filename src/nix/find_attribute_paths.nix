@@ -13,7 +13,7 @@
 
 let
   nixpkgs = builtins.getFlake "nixpkgs";
-  lib = import ./lib.nix { inherit nixpkgs; };
+  lib = import <lib> { inherit nixpkgs; };
 
   # Arguments have to be taken from environment when using `nix` command
   targetFlakeRef = builtins.getEnv "TARGET_FLAKE_REF";
