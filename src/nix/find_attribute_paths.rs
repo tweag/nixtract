@@ -31,8 +31,12 @@ pub fn find_attribute_paths(
 
     // Create a scope so env_vars isn't needlessly mutable
     let env_vars: HashMap<String, String> = {
-        let mut res =
-            HashMap::from([("TARGET_FLAKE_REF".to_owned(), flake_ref.as_ref().to_owned())]);
+        let mut res = HashMap::from([
+            ("TARGET_FLAKE_REF".to_owned(), flake_ref.as_ref().to_owned()),
+            ("NIXPKGS_ALLOW_UNFREE".to_owned(), "1".to_owned()),
+            ("NIXPKGS_ALLOW_INSECURE".to_owned(), "1".to_owned()),
+            ("NIXPKGS_ALLOW_BROKEN".to_owned(), "1".to_owned()),
+        ]);
         if let Some(attribute_path) = attribute_path {
             res.insert(
                 "TARGET_ATTRIBUTE_PATH".to_owned(),
