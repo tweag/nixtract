@@ -23,6 +23,7 @@ pub fn find_attribute_paths(
     flake_ref: impl AsRef<str>,
     system: impl AsRef<str>,
     attribute_path: impl AsRef<str>,
+    offline: &bool,
 ) -> Result<Vec<AttributePaths>> {
     let lib = Lib::new()?;
 
@@ -46,6 +47,10 @@ pub fn find_attribute_paths(
         .args(&["--json", "--expr", expr])
         .arg("--impure")
         .envs(env_vars);
+
+    if *offline {
+        command.arg("--offline");
+    }
 
     let output = command.output()?;
 
