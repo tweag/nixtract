@@ -79,7 +79,7 @@ pub fn describe_derivation(
 
     let expr = include_str!("describe_derivation.nix");
 
-    let env_vars: HashMap<String, String> = HashMap::from([
+    let env_vars = HashMap::from([
         ("TARGET_FLAKE_REF".to_owned(), flake_ref.as_ref().to_owned()),
         ("TARGET_SYSTEM".to_owned(), system.as_ref().to_owned()),
         (

@@ -14,7 +14,7 @@ fn process(
     attribute_path: &str,
     offline: &bool,
 ) -> Vec<DerivationDescription> {
-    log::debug!("Processing derivation: {}", attribute_path);
+    log::debug!("Processing derivation: {:?}", attribute_path);
 
     // call describe_derivation to get the derivation description
     let description = nix::describe_derivation(flake_ref, system, attribute_path, offline).unwrap();
@@ -61,7 +61,7 @@ fn process(
 pub fn nixtract(
     flake_ref: impl AsRef<str>,
     system: impl AsRef<str>,
-    attribute_path: impl AsRef<str>,
+    attribute_path: Option<impl AsRef<str>>,
     offline: &bool,
 ) -> Result<Vec<DerivationDescription>> {
     let flake_ref = flake_ref.as_ref();
@@ -69,10 +69,10 @@ pub fn nixtract(
     let attribute_path = attribute_path.as_ref();
 
     log::info!(
-        "Starting nixtract with flake_ref: {}, system: {}, attribute_path: {}",
+        "Starting nixtract with flake_ref: {}, system: {}, attribute_path: {:?}",
         flake_ref,
         system,
-        attribute_path
+        attribute_path.map(AsRef::as_ref).unwrap_or("")
     );
 
     let collected_paths: Arc<Mutex<std::collections::HashSet<String>>> =

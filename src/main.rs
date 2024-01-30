@@ -4,13 +4,13 @@ use nixtract::nixtract;
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
 struct Args {
-    #[arg(short, long = "target-flake-ref")]
+    #[arg(short, long = "target-flake-ref", default_value = "nixpkgs")]
     flake_ref: String,
     #[arg(short, long = "target-attribute-path")]
-    attribute_path: String,
+    attribute_path: Option<String>,
     #[arg(short, long = "target-system")]
     system: String,
-    #[arg(long)]
+    #[arg(long, default_value_t = false)]
     offline: bool,
     #[command(flatten)]
     verbose: clap_verbosity_flag::Verbosity,
