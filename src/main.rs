@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 use clap::Parser;
 use nixtract::nixtract;
 
@@ -9,11 +11,15 @@ struct Args {
     #[arg(short, long = "target-attribute-path")]
     attribute_path: Option<String>,
     #[arg(short, long = "target-system")]
-    system: String,
+    system: Option<String>,
     #[arg(long, default_value_t = false)]
     offline: bool,
+    #[arg(long, default_value_t = false)]
+    pretty: bool,
     #[command(flatten)]
     verbose: clap_verbosity_flag::Verbosity,
+    #[arg()]
+    output_path: Option<PathBuf>,
 }
 
 fn main() {
@@ -33,8 +39,17 @@ fn main() {
     )
     .unwrap();
 
-    // Display the results
-    for result in results {
-        println!("{}", serde_json::to_string(&result).unwrap());
+    // Print the results
+    let output = if opts.pretty {
+        serde_json::to_string_pretty(&results).unwrap()
+    } else {
+        serde_json::to_string(&results).unwrap()
+    };
+
+    if let Some(output_path) = opts.output_path {
+        log::info!("Writing results to {:?}", output_path);
+        std::fs::write(output_path, output).unwrap();
+    } else {
+        println!("{}", output);
     }
 }

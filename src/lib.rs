@@ -10,7 +10,7 @@ pub mod nix;
 fn process(
     collected_paths: &Arc<Mutex<std::collections::HashSet<String>>>,
     flake_ref: &str,
-    system: &str,
+    system: Option<&str>,
     attribute_path: &str,
     offline: &bool,
 ) -> Vec<DerivationDescription> {
@@ -60,18 +60,21 @@ fn process(
 
 pub fn nixtract(
     flake_ref: impl AsRef<str>,
-    system: impl AsRef<str>,
+    system: Option<impl AsRef<str>>,
     attribute_path: Option<impl AsRef<str>>,
     offline: &bool,
 ) -> Result<Vec<DerivationDescription>> {
     let flake_ref = flake_ref.as_ref();
-    let system = system.as_ref();
-    let attribute_path = attribute_path.as_ref();
+    // Convert system to a Option<&str>
+    let system = system.as_ref().map(AsRef::as_ref);
+    let attribute_path = attribute_path.as_ref().map(AsRef::as_ref);
 
     log::info!(
         "Starting nixtract with flake_ref: {}, system: {}, attribute_path: {:?}",
         flake_ref,
-        system,
+        system
+            .map(AsRef::as_ref)
+            .unwrap_or("builtins.currentSystem"),
         attribute_path.map(AsRef::as_ref).unwrap_or("")
     );
 

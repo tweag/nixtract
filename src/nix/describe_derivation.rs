@@ -71,7 +71,7 @@ pub struct BuiltInput {
 
 pub fn describe_derivation(
     flake_ref: impl AsRef<str>,
-    system: impl AsRef<str>,
+    system: Option<impl AsRef<str>>,
     attribute_path: impl AsRef<str>,
     offline: &bool,
 ) -> Result<DerivationDescription> {
@@ -79,14 +79,20 @@ pub fn describe_derivation(
 
     let expr = include_str!("describe_derivation.nix");
 
-    let env_vars = HashMap::from([
-        ("TARGET_FLAKE_REF".to_owned(), flake_ref.as_ref().to_owned()),
-        ("TARGET_SYSTEM".to_owned(), system.as_ref().to_owned()),
-        (
-            "TARGET_ATTRIBUTE_PATH".to_owned(),
-            attribute_path.as_ref().to_owned(),
-        ),
-    ]);
+    // Create a scope so env_vars isn't needlessly mutable
+    let env_vars: HashMap<String, String> = {
+        let mut res = HashMap::from([
+            ("TARGET_FLAKE_REF".to_owned(), flake_ref.as_ref().to_owned()),
+            (
+                "TARGET_ATTRIBUTE_PATH".to_owned(),
+                attribute_path.as_ref().to_owned(),
+            ),
+        ]);
+        if let Some(system) = system {
+            res.insert("TARGET_SYSTEM".to_owned(), system.as_ref().to_owned());
+        }
+        res
+    };
 
     // Run the nix command, with the provided environment variables and expression
     let mut command: Command = Command::new("nix");
