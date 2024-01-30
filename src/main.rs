@@ -1,5 +1,3 @@
-use std::path::PathBuf;
-
 use clap::Parser;
 use nixtract::nixtract;
 
@@ -37,7 +35,7 @@ struct Args {
     #[command(flatten)]
     verbose: clap_verbosity_flag::Verbosity,
     #[arg()]
-    output_path: Option<PathBuf>,
+    output_path: Option<String>,
 }
 
 fn main() {
@@ -64,10 +62,13 @@ fn main() {
         serde_json::to_string(&results).unwrap()
     };
 
-    if let Some(output_path) = opts.output_path {
-        log::info!("Writing results to {:?}", output_path);
-        std::fs::write(output_path, output).unwrap();
-    } else {
-        println!("{}", output);
+    match opts.output_path.as_deref() {
+        None | Some("-") => {
+            println!("{}", output);
+        }
+        Some(output_path) => {
+            log::info!("Writing results to {:?}", output_path);
+            std::fs::write(output_path, output).unwrap();
+        }
     }
 }
