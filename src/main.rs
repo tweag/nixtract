@@ -6,11 +6,29 @@ use nixtract::nixtract;
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
 struct Args {
-    #[arg(short, long = "target-flake-ref", default_value = "nixpkgs")]
+    #[arg(
+        short,
+        long = "target-flake-ref",
+        default_value = "nixpkgs",
+        help = "The flake URI to extract",
+        long_help = "The flake URI to extract, e.g. \"github:tweag/nixtract\""
+    )]
     flake_ref: String,
-    #[arg(short, long = "target-attribute-path")]
+
+    #[arg(
+        short,
+        long = "target-attribute-path",
+        help = "The attribute path to extract",
+        long_help = "The attribute path to extract, e.g. \"haskellPackages.hello\", defaults to all derivations in the flake"
+    )]
     attribute_path: Option<String>,
-    #[arg(short, long = "target-system")]
+
+    #[arg(
+        short,
+        long = "target-system",
+        help = "The system to extract",
+        long_help = "The system to extract, e.g. \"x86_64-linux\", defaults to the host system"
+    )]
     system: Option<String>,
     #[arg(long, default_value_t = false)]
     offline: bool,
