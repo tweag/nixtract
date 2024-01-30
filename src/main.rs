@@ -1,3 +1,5 @@
+use std::error::Error;
+
 use clap::Parser;
 use nixtract::nixtract;
 
@@ -28,17 +30,28 @@ struct Args {
         long_help = "The system to extract, e.g. \"x86_64-linux\", defaults to the host system"
     )]
     system: Option<String>,
+
+    /// Run nix evaluation in offline mode
     #[arg(long, default_value_t = false)]
     offline: bool,
+
+    /// Count of workers to spawn to describe derivations
+    #[arg(long)]
+    n_workers: Option<usize>,
+
+    /// Pretty print the output
     #[arg(long, default_value_t = false)]
     pretty: bool,
+
     #[command(flatten)]
     verbose: clap_verbosity_flag::Verbosity,
+
+    /// Write the output to a file instead of stdout or explicitly use `-` for stdout
     #[arg()]
     output_path: Option<String>,
 }
 
-fn main() {
+fn main() -> Result<(), Box<dyn Error>> {
     let opts: Args = Args::parse();
 
     // Initialize the logger with the provided verbosity
@@ -46,20 +59,27 @@ fn main() {
         .filter_level(opts.verbose.log_level_filter())
         .init();
 
+    // Initialize the rayon thread pool with the provided number of workers
+    // or use the default number of workers if none is provided
+    if let Some(n_workers) = opts.n_workers {
+        rayon::ThreadPoolBuilder::new()
+            .num_threads(n_workers)
+            .build_global()?;
+    }
+
     // Call the nixtract function with the provided arguments
     let results = nixtract(
         opts.flake_ref,
         opts.system,
         opts.attribute_path,
         &opts.offline,
-    )
-    .unwrap();
+    )?;
 
     // Print the results
     let output = if opts.pretty {
-        serde_json::to_string_pretty(&results).unwrap()
+        serde_json::to_string_pretty(&results)?
     } else {
-        serde_json::to_string(&results).unwrap()
+        serde_json::to_string(&results)?
     };
 
     match opts.output_path.as_deref() {
@@ -68,7 +88,9 @@ fn main() {
         }
         Some(output_path) => {
             log::info!("Writing results to {:?}", output_path);
-            std::fs::write(output_path, output).unwrap();
+            std::fs::write(output_path, output)?;
         }
-    }
+    };
+
+    Ok(())
 }
