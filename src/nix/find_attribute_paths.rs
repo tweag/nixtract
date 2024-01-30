@@ -51,7 +51,7 @@ pub fn find_attribute_paths(
         .arg("eval")
         .arg("-I")
         .arg(format!("lib={}", lib.path().to_string_lossy()))
-        .args(&["--json", "--expr", expr])
+        .args(["--json", "--expr", expr])
         .arg("--impure")
         .envs(env_vars);
 
