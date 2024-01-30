@@ -7,11 +7,10 @@ use crate::error::{Error, Result};
 
 #[derive(Deserialize, Serialize, Debug, Eq, PartialEq)]
 #[serde(rename_all = "camelCase")]
-
 pub struct DerivationDescription {
     pub attribute_path: String,
-    pub derivation_path: String,
-    pub output_path: String,
+    pub derivation_path: Option<String>,
+    pub output_path: Option<String>,
     pub outputs: Vec<Output>,
     pub name: String,
     pub parsed_name: ParsedName,
@@ -24,7 +23,7 @@ pub struct DerivationDescription {
 #[serde(rename_all = "camelCase")]
 pub struct Output {
     pub name: String,
-    pub output_path: String,
+    pub output_path: Option<String>,
 }
 
 #[derive(Deserialize, Serialize, Debug, Eq, PartialEq)]
@@ -87,6 +86,9 @@ pub fn describe_derivation(
                 "TARGET_ATTRIBUTE_PATH".to_owned(),
                 attribute_path.as_ref().to_owned(),
             ),
+            ("NIXPKGS_ALLOW_UNFREE".to_owned(), "1".to_owned()),
+            ("NIXPKGS_ALLOW_INSECURE".to_owned(), "1".to_owned()),
+            ("NIXPKGS_ALLOW_BROKEN".to_owned(), "1".to_owned()),
         ]);
         if let Some(system) = system {
             res.insert("TARGET_SYSTEM".to_owned(), system.as_ref().to_owned());
@@ -114,6 +116,8 @@ pub fn describe_derivation(
     // Get stdout, stderr as a String
     let stdout = String::from_utf8_lossy(&output.stdout);
     let stderr = String::from_utf8_lossy(&output.stderr);
+
+    log::debug!("stdout: {}", stdout);
 
     // Check if the nix command was successful
     if !output.status.success() {
