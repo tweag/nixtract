@@ -73,6 +73,7 @@ pub fn describe_derivation(
     flake_ref: impl AsRef<str>,
     system: impl AsRef<str>,
     attribute_path: impl AsRef<str>,
+    offline: &bool,
 ) -> Result<DerivationDescription> {
     let lib = Lib::new()?;
 
@@ -96,6 +97,11 @@ pub fn describe_derivation(
         .args(&["--json", "--expr", expr])
         .arg("--impure")
         .envs(env_vars);
+
+    // Add --offline if offline is set
+    if *offline {
+        command.arg("--offline");
+    }
 
     let output = command.output()?;
 
