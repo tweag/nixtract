@@ -10,7 +10,7 @@
 
 let
   nixpkgs = builtins.getFlake "nixpkgs";
-  lib = import ./lib.nix { inherit nixpkgs; };
+  lib = import <lib> { inherit nixpkgs; };
 
   # Arguments have to be taken from environment when using `nix` command
   targetFlakeRef = builtins.getEnv "TARGET_FLAKE_REF";
@@ -28,21 +28,10 @@ in
   name = targetValue.name;
   parsedName = (builtins.parseDrvName targetValue.name);
   attributePath = targetAttributePath;
-
-  src =
-    if targetValue ? src.gitRepoUrl && targetValue ? src.rev
-    then
-      {
-        gitRepoUrl = targetValue.src.gitRepoUrl or null;
-        rev = targetValue.src.rev or null;
-      }
-    else
-      null;
-
   nixpkgsMetadata =
     {
       description = (builtins.tryEval (targetValue.meta.description or "")).value;
-      pname = (builtins.tryEval (targetValue.pname or false)).value or null;
+      pname = (builtins.tryEval (targetValue.pname or "")).value or null;
       version = (builtins.tryEval (targetValue.version or "")).value;
       broken = (builtins.tryEval (targetValue.meta.broken or false)).value;
       homepage = (builtins.tryEval (targetValue.meta.homepage or "")).value;
