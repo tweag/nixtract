@@ -24,9 +24,8 @@ pub fn find_attribute_paths(
     system: Option<impl AsRef<str>>,
     attribute_path: Option<impl AsRef<str>>,
     offline: &bool,
+    lib: &Lib,
 ) -> Result<Vec<AttributePaths>> {
-    let lib = Lib::new()?;
-
     let expr = include_str!("find_attribute_paths.nix");
 
     // Create a scope so env_vars isn't needlessly mutable

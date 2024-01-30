@@ -73,9 +73,8 @@ pub fn describe_derivation(
     system: Option<impl AsRef<str>>,
     attribute_path: impl AsRef<str>,
     offline: &bool,
+    lib: &Lib,
 ) -> Result<DerivationDescription> {
-    let lib = Lib::new()?;
-
     let expr = include_str!("describe_derivation.nix");
 
     // Create a scope so env_vars isn't needlessly mutable
