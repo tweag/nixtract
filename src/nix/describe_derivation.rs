@@ -100,7 +100,7 @@ pub fn describe_derivation(
         .arg("eval")
         .arg("-I")
         .arg(format!("lib={}", lib.path().to_string_lossy()))
-        .args(&["--json", "--expr", expr])
+        .args(["--json", "--expr", expr])
         .arg("--impure")
         .envs(env_vars);
 
@@ -121,7 +121,7 @@ pub fn describe_derivation(
     }
 
     // Parse the stdout as JSON
-    let description: DerivationDescription = serde_json::from_str(&stdout.trim())?;
+    let description: DerivationDescription = serde_json::from_str(stdout.trim())?;
 
     Ok(description)
 }

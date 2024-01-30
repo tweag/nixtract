@@ -41,7 +41,7 @@ fn process(
                 Vec::new()
             } else {
                 process(
-                    &collected_paths,
+                    collected_paths,
                     flake_ref,
                     system,
                     &build_input.attribute_path,
