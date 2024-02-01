@@ -1,11 +1,12 @@
 {
-  outputs = { flake-utils, nixpkgs, nix, ... }:
+  outputs = { flake-utils, poetry2nix, ... }:
     flake-utils.lib.eachDefaultSystem (system:
       let
-        pkgs = nixpkgs.legacyPackages.${system};
+        pkgs = poetry2nix.inputs.nixpkgs.outputs.legacyPackages.${system};
+        inherit (poetry2nix.lib.mkPoetry2Nix { inherit pkgs; }) mkPoetryApplication;
       in
       {
-        packages.default = pkgs.poetry2nix.mkPoetryApplication {
+        packages.default = mkPoetryApplication {
           projectDir = ./.;
           meta.mainProgram = "nixtract";
         };
