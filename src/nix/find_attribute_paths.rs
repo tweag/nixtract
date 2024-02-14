@@ -20,9 +20,9 @@ pub struct FoundDrv {
 }
 
 pub fn find_attribute_paths(
-    flake_ref: impl AsRef<str>,
-    system: Option<impl AsRef<str>>,
-    attribute_path: Option<impl AsRef<str>>,
+    flake_ref: &String,
+    system: &Option<String>,
+    attribute_path: &Option<String>,
     offline: &bool,
     lib: &Lib,
 ) -> Result<Vec<AttributePaths>> {
@@ -31,19 +31,16 @@ pub fn find_attribute_paths(
     // Create a scope so env_vars isn't needlessly mutable
     let env_vars: HashMap<String, String> = {
         let mut res = HashMap::from([
-            ("TARGET_FLAKE_REF".to_owned(), flake_ref.as_ref().to_owned()),
+            ("TARGET_FLAKE_REF".to_owned(), flake_ref.to_owned()),
             ("NIXPKGS_ALLOW_UNFREE".to_owned(), "1".to_owned()),
             ("NIXPKGS_ALLOW_INSECURE".to_owned(), "1".to_owned()),
             ("NIXPKGS_ALLOW_BROKEN".to_owned(), "1".to_owned()),
         ]);
         if let Some(attribute_path) = attribute_path {
-            res.insert(
-                "TARGET_ATTRIBUTE_PATH".to_owned(),
-                attribute_path.as_ref().to_owned(),
-            );
+            res.insert("TARGET_ATTRIBUTE_PATH".to_owned(), attribute_path.clone());
         }
         if let Some(system) = system {
-            res.insert("TARGET_SYSTEM".to_owned(), system.as_ref().to_owned());
+            res.insert("TARGET_SYSTEM".to_owned(), system.to_owned());
         }
         res
     };

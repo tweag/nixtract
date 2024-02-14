@@ -72,25 +72,30 @@ fn main() -> Result<(), Box<dyn Error>> {
         opts.flake_ref,
         opts.system,
         opts.attribute_path,
-        &opts.offline,
+        opts.offline,
     )?;
 
-    // Print the results
-    let output = if opts.pretty {
-        serde_json::to_string_pretty(&results)?
-    } else {
-        serde_json::to_string(&results)?
+    // Create the out writer
+    let mut out_writer = match opts.output_path.as_deref() {
+        None | Some("-") => Box::new(std::io::stdout()) as Box<dyn std::io::Write>,
+        Some(path) => {
+            let file = std::fs::File::create(path)?;
+            Box::new(file) as Box<dyn std::io::Write>
+        }
     };
 
-    match opts.output_path.as_deref() {
-        None | Some("-") => {
-            println!("{}", output);
-        }
-        Some(output_path) => {
-            log::info!("Writing results to {:?}", output_path);
-            std::fs::write(output_path, output)?;
-        }
-    };
+    // Print the results
+    for result in results {
+        let output = if opts.pretty {
+            serde_json::to_string_pretty(&result)?
+        } else {
+            serde_json::to_string(&result)?
+        };
+
+        // Append to the out_writer
+        out_writer.write_all(output.as_bytes())?;
+        out_writer.write_all(b"\n")?;
+    }
 
     Ok(())
 }

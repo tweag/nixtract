@@ -1,5 +1,4 @@
 //! Nix only accepts a file as included files, so we need to create a temporary file to pass to it
-//! TODO: Allow sharing of a single lib instance so we don't copy the file so many times
 
 use crate::error::Result;
 use std::io::Write;
