@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 use super::lib::Lib;
 use crate::error::{Error, Result};
 
-#[derive(Deserialize, Serialize, Debug, Eq, PartialEq)]
+#[derive(Deserialize, Serialize, Debug, Eq, PartialEq, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct DerivationDescription {
     pub attribute_path: String,
@@ -19,21 +19,21 @@ pub struct DerivationDescription {
     pub build_inputs: Vec<BuiltInput>,
 }
 
-#[derive(Deserialize, Serialize, Debug, Eq, PartialEq)]
+#[derive(Deserialize, Serialize, Debug, Eq, PartialEq, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct Output {
     pub name: String,
     pub output_path: Option<String>,
 }
 
-#[derive(Deserialize, Serialize, Debug, Eq, PartialEq)]
+#[derive(Deserialize, Serialize, Debug, Eq, PartialEq, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct ParsedName {
     pub name: String,
     pub version: String,
 }
 
-#[derive(Deserialize, Serialize, Debug, Eq, PartialEq)]
+#[derive(Deserialize, Serialize, Debug, Eq, PartialEq, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct NixpkgsMetadata {
     pub description: String,
@@ -44,7 +44,7 @@ pub struct NixpkgsMetadata {
     pub licenses: Option<Vec<License>>,
 }
 
-#[derive(Deserialize, Serialize, Debug, Eq, PartialEq)]
+#[derive(Deserialize, Serialize, Debug, Eq, PartialEq, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct Source {
     pub git_repo_url: String,
@@ -52,7 +52,7 @@ pub struct Source {
     pub rev: String,
 }
 
-#[derive(Deserialize, Serialize, Debug, Eq, PartialEq)]
+#[derive(Deserialize, Serialize, Debug, Eq, PartialEq, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct License {
     // Not all licenses in nixpkgs have an associated spdx id
@@ -60,7 +60,7 @@ pub struct License {
     pub full_name: String,
 }
 
-#[derive(Deserialize, Serialize, Debug, Eq, PartialEq)]
+#[derive(Deserialize, Serialize, Debug, Eq, PartialEq, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct BuiltInput {
     pub attribute_path: String,
@@ -69,9 +69,9 @@ pub struct BuiltInput {
 }
 
 pub fn describe_derivation(
-    flake_ref: impl AsRef<str>,
-    system: Option<impl AsRef<str>>,
-    attribute_path: impl AsRef<str>,
+    flake_ref: &String,
+    system: &Option<String>,
+    attribute_path: &String,
     offline: &bool,
     lib: &Lib,
 ) -> Result<DerivationDescription> {
@@ -80,17 +80,17 @@ pub fn describe_derivation(
     // Create a scope so env_vars isn't needlessly mutable
     let env_vars: HashMap<String, String> = {
         let mut res = HashMap::from([
-            ("TARGET_FLAKE_REF".to_owned(), flake_ref.as_ref().to_owned()),
+            ("TARGET_FLAKE_REF".to_owned(), flake_ref.to_owned()),
             (
                 "TARGET_ATTRIBUTE_PATH".to_owned(),
-                attribute_path.as_ref().to_owned(),
+                attribute_path.to_owned(),
             ),
             ("NIXPKGS_ALLOW_UNFREE".to_owned(), "1".to_owned()),
             ("NIXPKGS_ALLOW_INSECURE".to_owned(), "1".to_owned()),
             ("NIXPKGS_ALLOW_BROKEN".to_owned(), "1".to_owned()),
         ]);
         if let Some(system) = system {
-            res.insert("TARGET_SYSTEM".to_owned(), system.as_ref().to_owned());
+            res.insert("TARGET_SYSTEM".to_owned(), system.to_owned());
         }
         res
     };
