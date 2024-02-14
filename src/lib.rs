@@ -18,17 +18,6 @@ fn process(
     // Sender channel to communicate DerivationDescription to the main thread
     tx: mpsc::Sender<DerivationDescription>,
 ) -> Result<()> {
-    // check if the build_input has already be processed
-    let done = {
-        let mut collected_paths = collected_paths.lock().unwrap();
-        !collected_paths.insert(attribute_path.to_string())
-    };
-
-    if done {
-        log::debug!("Skipping already processed derivation: {}", attribute_path);
-        return Ok(());
-    }
-
     log::debug!("Processing derivation: {:?}", attribute_path);
 
     // call describe_derivation to get the derivation description
@@ -43,6 +32,23 @@ fn process(
         .build_inputs
         .into_par_iter()
         .map(|build_input| -> Result<()> {
+            // check if the build_input has already be processed
+            let done = {
+                let mut collected_paths = collected_paths.lock().unwrap();
+                match build_input.output_path {
+                    Some(store_path) => !collected_paths.insert(store_path.to_string()),
+                    None => false,
+                }
+            };
+
+            if done {
+                log::debug!(
+                    "Skipping already processed derivation: {}",
+                    build_input.attribute_path.to_string()
+                );
+                return Ok(());
+            }
+
             process(
                 collected_paths,
                 flake_ref,
