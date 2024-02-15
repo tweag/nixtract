@@ -3,10 +3,11 @@ use rayon::prelude::*;
 use std::sync::mpsc;
 
 use error::Result;
-use nix::{DerivationDescription, FoundDrv};
+
+mod nix;
+pub use nix::*;
 
 pub mod error;
-pub mod nix;
 
 fn process(
     collected_paths: &Arc<Mutex<std::collections::HashSet<String>>>,
