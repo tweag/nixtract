@@ -2,6 +2,7 @@ use std::error::Error;
 
 use clap::Parser;
 use nixtract::nixtract;
+use std::fs;
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
@@ -59,6 +60,10 @@ fn main() -> Result<(), Box<dyn Error>> {
         .filter_level(opts.verbose.log_level_filter())
         .init();
 
+    main_with_args(opts)
+}
+
+fn main_with_args(opts: Args) -> Result<(), Box<dyn Error>> {
     // Initialize the rayon thread pool with the provided number of workers
     // or use the default number of workers if none is provided
     if let Some(n_workers) = opts.n_workers {
@@ -98,4 +103,35 @@ fn main() -> Result<(), Box<dyn Error>> {
     }
 
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_main_fixtures() {
+        // For every subdirectory in the tests/fixtures directory
+        for entry in fs::read_dir("tests/fixtures").unwrap() {
+            let entry = entry.unwrap();
+            let path = entry.path().canonicalize().unwrap();
+            if path.is_dir() {
+                // Create the Opts for the main_with_args function
+                let opts = Args {
+                    flake_ref: path.to_str().unwrap().to_string(),
+                    attribute_path: Option::default(),
+                    system: Option::default(),
+                    offline: bool::default(),
+                    n_workers: Option::default(),
+                    pretty: bool::default(),
+                    verbose: clap_verbosity_flag::Verbosity::default(),
+                    // Write output to /dev/null to avoid cluttering the test output
+                    output_path: Some("/dev/null".to_string()),
+                };
+
+                // Call the main_with_args function and assert it to be ok
+                assert!(main_with_args(opts).is_ok());
+            }
+        }
+    }
 }
