@@ -10,7 +10,7 @@ use crate::error::{Error, Result};
 pub struct DerivationDescription {
     pub attribute_path: String,
     pub derivation_path: Option<String>,
-    pub output_path: Option<String>,
+    pub output_path: String,
     pub outputs: Vec<Output>,
     pub name: String,
     pub parsed_name: ParsedName,
@@ -65,7 +65,7 @@ pub struct License {
 pub struct BuiltInput {
     pub attribute_path: String,
     pub build_input_type: String,
-    pub output_path: Option<String>,
+    pub output_path: String,
 }
 
 pub fn describe_derivation(

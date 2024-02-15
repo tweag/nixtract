@@ -22,8 +22,7 @@ fn process(
     log::debug!("Processing derivation: {:?}", attribute_path);
 
     // call describe_derivation to get the derivation description
-    let description =
-        nix::describe_derivation(flake_ref, system, &attribute_path, &offline, lib).unwrap();
+    let description = nix::describe_derivation(flake_ref, system, &attribute_path, &offline, lib)?;
 
     // Send the DerivationDescription to the main thread
     tx.send(description.clone())?;
@@ -36,10 +35,7 @@ fn process(
             // check if the build_input has already be processed
             let done = {
                 let mut collected_paths = collected_paths.lock().unwrap();
-                match build_input.output_path {
-                    Some(store_path) => !collected_paths.insert(store_path.to_string()),
-                    None => false,
-                }
+                !collected_paths.insert(build_input.output_path.clone())
             };
 
             if done {
