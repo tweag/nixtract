@@ -113,7 +113,7 @@ pub fn nixtract(
                 tx.clone(),
             ) {
                 Ok(_) => {}
-                Err(e) => log::error!("Error processing derivation: {}", e),
+                Err(e) => log::warn!("Error processing derivation: {}", e),
             }
         });
     });

@@ -75,7 +75,15 @@ pub fn find_attribute_paths(
             return Err(Error::NixCommand(output.status.code(), stderr.to_string()));
         } else {
             let attribute_paths: AttributePaths =
-                serde_json::from_str(line.trim_start_matches("trace: "))?;
+                match serde_json::from_str(line.trim_start_matches("trace: ")) {
+                    Ok(attribute_paths) => attribute_paths,
+                    Err(e) => {
+                        return Err(Error::SerdeJSON(
+                            attribute_path.clone().unwrap_or_default(),
+                            e,
+                        ))
+                    }
+                };
             res.push(attribute_paths);
         }
     }

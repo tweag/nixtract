@@ -124,7 +124,10 @@ pub fn describe_derivation(
     }
 
     // Parse the stdout as JSON
-    let description: DerivationDescription = serde_json::from_str(stdout.trim())?;
+    let description: DerivationDescription = match serde_json::from_str(stdout.trim()) {
+        Ok(description) => description,
+        Err(e) => return Err(Error::SerdeJSON(attribute_path.to_owned(), e)),
+    };
 
     Ok(description)
 }
