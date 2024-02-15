@@ -2,7 +2,6 @@ use std::error::Error;
 
 use clap::Parser;
 use nixtract::nixtract;
-use std::fs;
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
@@ -108,9 +107,10 @@ fn main_with_args(opts: Args) -> Result<(), Box<dyn Error>> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::fs;
 
     #[test]
-    fn test_main_fixtures() {
+    fn test_main_fixtures() -> Result<(), Box<dyn Error>> {
         // For every subdirectory in the tests/fixtures directory
         for entry in fs::read_dir("tests/fixtures").unwrap() {
             let entry = entry.unwrap();
@@ -129,9 +129,18 @@ mod tests {
                     output_path: Some("/dev/null".to_string()),
                 };
 
-                // Call the main_with_args function and assert it to be ok
-                assert!(main_with_args(opts).is_ok());
+                log::info!("Running test for {:?}", path);
+
+                let res = main_with_args(opts);
+
+                if res.is_ok() {
+                    log::info!("Test for {:?} passed", path);
+                } else {
+                    log::error!("Test for {:?} failed", path);
+                    return res;
+                }
             }
         }
+        Ok(())
     }
 }

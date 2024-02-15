@@ -90,22 +90,21 @@ pub fn nixtract(
         attribute_path.clone().unwrap_or_default()
     );
 
+    let collected_paths: Arc<Mutex<std::collections::HashSet<String>>> =
+        Arc::new(Mutex::new(std::collections::HashSet::new()));
+
+    // call find_attribute_paths to get the initial set of derivations
+    let attribute_paths =
+        nix::find_attribute_paths(&flake_ref, &system, &attribute_path, &offline, &lib)?;
+
+    // Combine all AttributePaths into a single Vec
+    let mut derivations: Vec<FoundDrv> = Vec::new();
+    for attribute_path in attribute_paths {
+        derivations.extend(attribute_path.found_drvs);
+    }
+
     // Spawn a new rayon thread to call process on every foundDrv
     rayon::spawn(move || {
-        let collected_paths: Arc<Mutex<std::collections::HashSet<String>>> =
-            Arc::new(Mutex::new(std::collections::HashSet::new()));
-
-        // call find_attribute_paths to get the initial set of derivations
-        let attribute_paths =
-            nix::find_attribute_paths(&flake_ref, &system, &attribute_path, &offline, &lib)
-                .unwrap();
-
-        // Combine all AttributePaths into a single Vec
-        let mut derivations: Vec<FoundDrv> = Vec::new();
-        for attribute_path in attribute_paths {
-            derivations.extend(attribute_path.found_drvs);
-        }
-
         derivations.into_par_iter().for_each(|found_drv| {
             match process(
                 &collected_paths,
