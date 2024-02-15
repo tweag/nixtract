@@ -109,8 +109,14 @@ mod tests {
     use super::*;
     use std::fs;
 
+    fn init() {
+        let _ = env_logger::builder().is_test(true).try_init();
+    }
+
     #[test]
     fn test_main_fixtures() -> Result<(), Box<dyn Error>> {
+        init();
+
         // For every subdirectory in the tests/fixtures directory
         for entry in fs::read_dir("tests/fixtures").unwrap() {
             let entry = entry.unwrap();
