@@ -10,7 +10,7 @@ authors = [
 edition = "2021"
 description = "A CLI tool and library to extract the graph of derivations from a Nix flake."
 homepage = "github.com/tweag/nixtract"
-repository = "github.com/tweag/nixtract"
+repository = "https://github.com/tweag/nixtract"
 license = "MIT OR Apache-2.0"
 keywords = ["nix", "flake", "graph", "derivation"]
 categories = ["development-tools"]
@@ -37,3 +37,21 @@ serde_json = "1.0.113"
 shell-escape = "0.1.5"
 tempfile = "3.9.0"
 thiserror = "1.0.56"
+
+# The profile that 'cargo dist' will build with
+[profile.dist]
+inherits = "release"
+lto = "thin"
+
+# Config for 'cargo dist'
+[workspace.metadata.dist]
+# The preferred cargo-dist version to use in CI (Cargo.toml SemVer syntax)
+cargo-dist-version = "0.8.2"
+# CI backends to support
+ci = ["github"]
+# The installers to generate for each app
+installers = []
+# Target platforms to build apps for (Rust target-triple syntax)
+targets = ["aarch64-apple-darwin", "x86_64-apple-darwin", "x86_64-unknown-linux-gnu"]
+# Publish jobs to run in CI
+pr-run-mode = "plan"
