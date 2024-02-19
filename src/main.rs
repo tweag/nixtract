@@ -161,6 +161,7 @@ mod tests {
                     n_workers: Option::default(),
                     pretty: bool::default(),
                     verbose: clap_verbosity_flag::Verbosity::default(),
+                    output_schema: bool::default(),
                     // Write output to /dev/null to avoid cluttering the test output
                     output_path: Some("/dev/null".to_string()),
                 };

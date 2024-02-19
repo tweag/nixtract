@@ -1,3 +1,33 @@
+//! # nixtract
+//! nixtract is a library and command line tool to extract information from nix derivations.
+//! The main way to use nixtract is to call the `nixtract` function with a flake reference and optionally a system and attribute path.
+//! Alternatively, the underlying functions can be used directly to extract information from nix derivations.
+//! ## Example
+//! ```no_run
+//! use nixtract::nixtract;
+//! use std::error::Error;
+//!
+//! fn main() -> Result<(), Box<dyn Error>> {
+//!     let flake_ref = "nixpkgs";
+//!     let system = Some("x86_64-linux");
+//!     let attribute_path = Some("haskellPackages.hello");
+//!     let offline = false;
+//!
+//!     let derivations = nixtract(flake_ref, system, attribute_path, offline)?;
+//!
+//!     for derivation in derivations {
+//!         println!("{:?}", derivation);
+//!     }
+//!
+//!     Ok(())
+//! }
+//! ```
+//! ## Command Line
+//! nixtract can also be used as a command line tool. For example:
+//! ```sh
+//! nixtract --target-flake-ref nixpkgs --target-system x86_64-linux --target-attribute-path haskellPackages.hello
+//! ```
+
 use ::std::sync::{Arc, Mutex};
 use rayon::prelude::*;
 use std::sync::mpsc;
