@@ -1,3 +1,22 @@
+//! The main entry point for the nixtract command line tool.
+//!
+//! Calling this tool starts a subprocess that list top-level derivations (outputPath + attribute path) to its stderr pipe, see `src/nix/find_attribute_paths.nix`.
+//! This pipe is consumed in a thread that reads each line and populates a vector.
+//! This vector is consumed by rayon threads that will call the `process` function.
+//! This function will call a subprocess that describes the derivation (name, version, license, dependencies, ...), see `src/nix/describe_derivation.nix`.
+//! When describing a derivation, if dependencies are found and have not been already queued for processing, they are added to the current thread's queue, which makes us explore the entire depth of the graph.
+//! Rayon ensures that a thread without work in its queue will steal work from another thread, so we can explore the graph in parallel.
+//!
+//! The whole system stops once
+//! - all top-level attribute paths have been found
+//! - all derivations from that search have been processed
+//! - all dependencies have been processed
+//!
+//! Glossary:
+//! - output path: full path of the realization of the derivation in the Nix store.
+//!     e.g. /nix/store/py9jjqsgsya5b9cpps64gchaj8lq2h5i-python3.10-versioneer-0.28
+//! - attribute path: path from the root attribute set to get the desired value.
+//!     e.g. python3Derivations.versioneer
 use std::error::Error;
 
 use clap::Parser;
