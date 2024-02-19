@@ -35,7 +35,16 @@ fn process(
             // check if the build_input has already be processed
             let done = {
                 let mut collected_paths = collected_paths.lock().unwrap();
-                !collected_paths.insert(build_input.output_path.clone())
+                match &build_input.output_path {
+                    None => {
+                        log::warn!(
+                            "Found a derivation without an output_path: {:?}",
+                            build_input
+                        );
+                        false
+                    }
+                    Some(output_path) => !collected_paths.insert(output_path.clone()),
+                }
             };
 
             if done {
