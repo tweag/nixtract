@@ -72,7 +72,10 @@ pub fn find_attribute_paths(
 
     for line in stderr.lines() {
         if !line.starts_with("trace: ") {
-            return Err(Error::NixCommand(output.status.code(), stderr.to_string()));
+            log::warn!(
+                "Unexpected output from nix command, attempting to continue: {}",
+                line
+            );
         } else {
             let attribute_paths: AttributePaths =
                 match serde_json::from_str(line.trim_start_matches("trace: ")) {
