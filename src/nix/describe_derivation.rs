@@ -1,11 +1,12 @@
 use std::{collections::HashMap, process::Command};
 
+use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 use super::lib::Lib;
 use crate::error::{Error, Result};
 
-#[derive(Deserialize, Serialize, Debug, Eq, PartialEq, Clone)]
+#[derive(Deserialize, Serialize, Debug, Eq, PartialEq, Clone, JsonSchema)]
 #[serde(rename_all(deserialize = "camelCase"))]
 pub struct DerivationDescription {
     pub attribute_path: String,
@@ -19,21 +20,21 @@ pub struct DerivationDescription {
     pub build_inputs: Vec<BuiltInput>,
 }
 
-#[derive(Deserialize, Serialize, Debug, Eq, PartialEq, Clone)]
+#[derive(Deserialize, Serialize, Debug, Eq, PartialEq, Clone, JsonSchema)]
 #[serde(rename_all(deserialize = "camelCase"))]
 pub struct Output {
     pub name: String,
     pub output_path: Option<String>,
 }
 
-#[derive(Deserialize, Serialize, Debug, Eq, PartialEq, Clone)]
+#[derive(Deserialize, Serialize, Debug, Eq, PartialEq, Clone, JsonSchema)]
 #[serde(rename_all(deserialize = "camelCase"))]
 pub struct ParsedName {
     pub name: String,
     pub version: String,
 }
 
-#[derive(Deserialize, Serialize, Debug, Eq, PartialEq, Clone)]
+#[derive(Deserialize, Serialize, Debug, Eq, PartialEq, Clone, JsonSchema)]
 #[serde(rename_all(deserialize = "camelCase"))]
 pub struct NixpkgsMetadata {
     pub description: String,
@@ -44,7 +45,7 @@ pub struct NixpkgsMetadata {
     pub licenses: Option<Vec<License>>,
 }
 
-#[derive(Deserialize, Serialize, Debug, Eq, PartialEq, Clone)]
+#[derive(Deserialize, Serialize, Debug, Eq, PartialEq, Clone, JsonSchema)]
 #[serde(rename_all(deserialize = "camelCase"))]
 pub struct Source {
     pub git_repo_url: String,
@@ -52,7 +53,7 @@ pub struct Source {
     pub rev: String,
 }
 
-#[derive(Deserialize, Serialize, Debug, Eq, PartialEq, Clone)]
+#[derive(Deserialize, Serialize, Debug, Eq, PartialEq, Clone, JsonSchema)]
 #[serde(rename_all(deserialize = "camelCase"))]
 pub struct License {
     // Not all licenses in nixpkgs have an associated spdx id
@@ -60,7 +61,7 @@ pub struct License {
     pub full_name: String,
 }
 
-#[derive(Deserialize, Serialize, Debug, Eq, PartialEq, Clone)]
+#[derive(Deserialize, Serialize, Debug, Eq, PartialEq, Clone, JsonSchema)]
 #[serde(rename_all(deserialize = "camelCase"))]
 pub struct BuiltInput {
     pub attribute_path: String,
