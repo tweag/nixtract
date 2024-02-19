@@ -1,4 +1,4 @@
-[![PyPI Latest Release](https://img.shields.io/pypi/v/nixtract-cli.svg)](https://pypi.org/project/nixtract-cli/) ![Build](https://img.shields.io/github/actions/workflow/status/tweag/nixtract/ci.yml
+![Build](https://img.shields.io/github/actions/workflow/status/tweag/nixtract/build_nix.yml
 ) [![Discord channel](https://img.shields.io/discord/1174731094726295632)](https://discord.gg/53XwX7Ft)
 
 # `nixtract`
@@ -23,35 +23,59 @@ Get it using Nix
 $ nix shell github:tweag/nixtract
 ```
 
-or install in your Python environment:
+Or install using `cargo`
 
 ```console
-$ pip install nixtract-cli
+cargo install --git https://github.com/tweag/nixtract.git
 ```
 
 ### Usage
 
 ```console
 $ nixtract --help
-Usage: nixtract [OPTIONS] OUTFILE
+A CLI tool and library to extract the graph of derivations from a Nix flake.
 
-  Extract the graph of derivations from a flake as JSONL.
+Usage: nixtract [OPTIONS] [OUTPUT_PATH]
 
-  OUTFILE is the path to the output file to write to, use "-" to write to
-  stdout.
+Arguments:
+  [OUTPUT_PATH]
+          Write the output to a file instead of stdout or explicitly use `-` for stdout
 
 Options:
-  --target-flake-ref TEXT       The reference of the target Nix Flake
-  --target-attribute-path TEXT  The attribute path of the provided
-                                attribute set to evaluate. If empty, the
-                                entire attribute set is evaluated
-  --target-system TEXT          The system in which to evaluate the
-                                derivations
-  --n-workers INTEGER           Count of workers to spawn to describe the
-                                stream of found derivations
-  --offline                     Pass --offline to Nix commands
-  -v, --verbose                 Increase verbosity
-  --help                        Show this message and exit.
+  -f, --target-flake-ref <FLAKE_REF>
+          The flake URI to extract, e.g. "github:tweag/nixtract"
+
+          [default: nixpkgs]
+
+  -a, --target-attribute-path <ATTRIBUTE_PATH>
+          The attribute path to extract, e.g. "haskellPackages.hello", defaults to all derivations in the flake
+
+  -s, --target-system <SYSTEM>
+          The system to extract, e.g. "x86_64-linux", defaults to the host system
+
+      --offline
+          Run nix evaluation in offline mode
+
+      --n-workers <N_WORKERS>
+          Count of workers to spawn to describe derivations
+
+      --pretty
+          Pretty print the output
+
+  -v, --verbose...
+          Increase logging verbosity
+
+  -q, --quiet...
+          Decrease logging verbosity
+
+      --output-schema
+          Output the json schema
+
+  -h, --help
+          Print help (see a summary with '-h')
+
+  -V, --version
+          Print version
 ```
 
 ### Extract nixpkgs graph of derivations
@@ -59,7 +83,7 @@ Options:
 To extract the data from the `nixpkgs` of your flake registry and output to stdout, use:
 
 ```console
-$ nixtract -
+$ nixtract
 ```
 
 you can specify a file path directly instead
@@ -68,22 +92,22 @@ you can specify a file path directly instead
 $ nixtract derivations.jsonl
 ```
 
-in order to extract from a specific flake, use `--target-flake-ref`:
+in order to extract from a specific flake, use `--target-flake-ref` or `-f`:
 
 ```console
-$ nixtract --target-flake-ref 'github:nixos/nixpkgs/23.05' -
+$ nixtract --target-flake-ref 'github:nixos/nixpkgs/23.05'
 ```
 
-in order to extract from a specific attribute, use `--target-attribute`:
+in order to extract from a specific attribute, use `--target-attribute` or `-a`:
 
 ```console
-$ nixtract --target-attribute-path 'haskellPackages.hello' -
+$ nixtract --target-attribute-path 'haskellPackages.hello'
 ```
 
-in order to extract for a specific system, use `--target-system`:
+in order to extract for a specific system, use `--target-system` or `-s`:
 
 ```console
-$ nixtract --target-system 'x86_64-darwin' -
+$ nixtract --target-system 'x86_64-darwin'
 ```
 
 ### Understanding the output
@@ -98,27 +122,32 @@ As such, the output is a JSONL file.
 The JSON schema of a derivation can be shown like so:
 
 ```console
-$ python -c 'import nixtract.model; print(nixtract.model.Derivation.schema_json(indent=2))'
+$ nixtract --output-schema
 ```
 
 ## Development
 
 ### Set up
 
-Requires a Python environment (^3.10) and `poetry`.
+#### Using Nix
 ```console
-$ poetry install
+$ nix develop
 ```
+
+#### Manually
+If Nix is not available, you can install the Rust toolchain manually.
 
 ### Under the hood
 
-The overall architecture inside is described in `nixtract/cli.py`:
+The overall architecture inside is described in `src/main.rs`:
 
 ```
-Calling this tool starts a subprocess that list top-level derivations (outputPath + attribute path) to its stderr pipe, see `./find-attribute-paths.nix`.
-This pipe is consumed in a thread (`finder_output_reader`) that reads each line and feeds found attribute paths to a queue.
-This queue is consumed by another thread (`queue_processor`) that will call a subprocess that describes the derivation (name, version, license, dependencies, ...), see `./describe-derivation.nix`.
-When describing a derivation, if dependencies are found and have not been already queued for processing, they are added to the queue as well, which makes us explore the entire depth of the graph.
+Calling this tool starts a subprocess that list top-level derivations (outputPath + attribute path) to its stderr pipe, see `src/nix/find_attribute_paths.nix`.
+This pipe is consumed in a thread that reads each line and populates a vector.
+This vector is consumed by rayon threads that will call the `process` function.
+This function will call a subprocess that describes the derivation (name, version, license, dependencies, ...), see `src/nix/describe_derivation.nix`.
+When describing a derivation, if dependencies are found and have not been already queued for processing, they are added to the current thread's queue, which makes us explore the entire depth of the graph.
+Rayon ensures that a thread without work in its queue will steal work from another thread, so we can explore the graph in parallel.
 
 The whole system stops once
 - all top-level attribute paths have been found
