@@ -26,9 +26,9 @@ let
 in
 {
   name = targetValue.name;
-  parsedName = (builtins.parseDrvName targetValue.name);
-  attributePath = targetAttributePath;
-  nixpkgsMetadata =
+  parsed_name = (builtins.parseDrvName targetValue.name);
+  attribute_path = targetAttributePath;
+  nixpkgs_metadata =
     {
       description = (builtins.tryEval (targetValue.meta.description or "")).value;
       pname = (builtins.tryEval (targetValue.pname or "")).value or null;
@@ -39,16 +39,16 @@ in
         if builtins.isAttrs (targetValue.meta.license or null)
         # In case the license attribute is not a list, we produce a singleton list to be consistent
         then [{
-          spdxId = targetValue.meta.license.spdxId or null;
-          fullName = targetValue.meta.license.fullName or null;
+          spdx_id = targetValue.meta.license.spdxId or null;
+          full_name = targetValue.meta.license.fullName or null;
         }]
         # In case the license attribute is a list
         else if builtins.isList (targetValue.meta.license or null)
         then
           builtins.map
             (l: {
-              spdxId = l.spdxId or null;
-              fullName = l.fullName or null;
+              spdx_id = l.spdxId or null;
+              full_name = l.fullName or null;
             })
             targetValue.meta.license
         else null
@@ -56,26 +56,26 @@ in
     };
 
   # path to the evaluated derivation file
-  derivationPath = lib.safePlatformDrvEval targetSystem (drv: drv.drvPath) targetValue;
+  derivation_Path = lib.safePlatformDrvEval targetSystem (drv: drv.drvPath) targetValue;
 
   # path to the realized (=built) derivation
   # note: we can't name it `outPath` because serialization would only output it instead of dict, see Nix `toString` docs
-  outputPath =
+  output_path =
     # TODO meaningfully represent when it's not the right platform (instead of null)
     lib.safePlatformDrvEval
       targetSystem
       (drv: drv.outPath)
       targetValue;
-  outputs = map (name: { inherit name; outputPath = lib.safePlatformDrvEval targetSystem (drv: drv.outPath) targetValue.${name}; }) (targetValue.outputs or [ ]);
-  buildInputs = nixpkgs.lib.lists.flatten
+  outputs = map (name: { inherit name; output_path = lib.safePlatformDrvEval targetSystem (drv: drv.outPath) targetValue.${name}; }) (targetValue.outputs or [ ]);
+  build_inputs = nixpkgs.lib.lists.flatten
     (map
       (inputType:
         map
           (elem:
             {
-              buildInputType = nixpkgs.lib.removeSuffix "s" (lib.toSnakeCase inputType);
-              attributePath = targetAttributePath + ".${inputType}.${builtins.toString elem.index}";
-              outputPath = lib.safePlatformDrvEval targetSystem (drv: drv.outPath) elem.value;
+              build_input_type = nixpkgs.lib.removeSuffix "s" (lib.toSnakeCase inputType);
+              attribute_path = targetAttributePath + ".${inputType}.${builtins.toString elem.index}";
+              output_path = lib.safePlatformDrvEval targetSystem (drv: drv.outPath) elem.value;
             }
           )
           (

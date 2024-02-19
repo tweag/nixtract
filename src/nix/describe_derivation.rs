@@ -7,7 +7,6 @@ use super::lib::Lib;
 use crate::error::{Error, Result};
 
 #[derive(Deserialize, Serialize, Debug, Eq, PartialEq, Clone, JsonSchema)]
-#[serde(rename_all(deserialize = "camelCase"))]
 pub struct DerivationDescription {
     pub attribute_path: String,
     pub derivation_path: Option<String>,
@@ -21,21 +20,18 @@ pub struct DerivationDescription {
 }
 
 #[derive(Deserialize, Serialize, Debug, Eq, PartialEq, Clone, JsonSchema)]
-#[serde(rename_all(deserialize = "camelCase"))]
 pub struct Output {
     pub name: String,
     pub output_path: Option<String>,
 }
 
 #[derive(Deserialize, Serialize, Debug, Eq, PartialEq, Clone, JsonSchema)]
-#[serde(rename_all(deserialize = "camelCase"))]
 pub struct ParsedName {
     pub name: String,
     pub version: String,
 }
 
 #[derive(Deserialize, Serialize, Debug, Eq, PartialEq, Clone, JsonSchema)]
-#[serde(rename_all(deserialize = "camelCase"))]
 pub struct NixpkgsMetadata {
     pub description: String,
     pub pname: String,
@@ -46,7 +42,6 @@ pub struct NixpkgsMetadata {
 }
 
 #[derive(Deserialize, Serialize, Debug, Eq, PartialEq, Clone, JsonSchema)]
-#[serde(rename_all(deserialize = "camelCase"))]
 pub struct Source {
     pub git_repo_url: String,
     // Revision or tag of the git repo
@@ -54,7 +49,6 @@ pub struct Source {
 }
 
 #[derive(Deserialize, Serialize, Debug, Eq, PartialEq, Clone, JsonSchema)]
-#[serde(rename_all(deserialize = "camelCase"))]
 pub struct License {
     // Not all licenses in nixpkgs have an associated spdx id
     pub spdx_id: Option<String>,
@@ -62,7 +56,6 @@ pub struct License {
 }
 
 #[derive(Deserialize, Serialize, Debug, Eq, PartialEq, Clone, JsonSchema)]
-#[serde(rename_all(deserialize = "camelCase"))]
 pub struct BuiltInput {
     pub attribute_path: String,
     pub build_input_type: String,
