@@ -46,6 +46,10 @@ struct Args {
     #[command(flatten)]
     verbose: clap_verbosity_flag::Verbosity,
 
+    /// Output the json schema
+    #[arg(long, default_value_t = false)]
+    output_schema: bool,
+
     /// Write the output to a file instead of stdout or explicitly use `-` for stdout
     #[arg()]
     output_path: Option<String>,
@@ -59,7 +63,14 @@ fn main() -> Result<(), Box<dyn Error>> {
         .filter_level(opts.verbose.log_level_filter())
         .init();
 
-    main_with_args(opts)
+    // If schema is requested, print the schema and return
+    if opts.output_schema {
+        let schema = schemars::schema_for!(nixtract::DerivationDescription);
+        println!("{}", serde_json::to_string_pretty(&schema)?);
+        Ok(())
+    } else {
+        main_with_args(opts)
+    }
 }
 
 fn main_with_args(opts: Args) -> Result<(), Box<dyn Error>> {
