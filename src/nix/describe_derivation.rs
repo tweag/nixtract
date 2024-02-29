@@ -7,6 +7,7 @@ use super::lib::Lib;
 use crate::error::{Error, Result};
 
 #[derive(Deserialize, Serialize, Debug, Eq, PartialEq, Clone, JsonSchema)]
+/// All information of a derivation that is extracted directly from nix
 pub struct DerivationDescription {
     pub attribute_path: String,
     pub derivation_path: Option<String>,
@@ -17,6 +18,9 @@ pub struct DerivationDescription {
     pub nixpkgs_metadata: NixpkgsMetadata,
     pub src: Option<Source>,
     pub build_inputs: Vec<BuiltInput>,
+
+    #[serde(skip_deserializing)]
+    pub nar_info: Option<super::narinfo::NarInfo>,
 }
 
 #[derive(Deserialize, Serialize, Debug, Eq, PartialEq, Clone, JsonSchema)]
@@ -67,6 +71,8 @@ pub fn describe_derivation(
     system: &Option<String>,
     attribute_path: &String,
     offline: &bool,
+    include_nar_info: &bool,
+    binary_caches: &Option<Vec<String>>,
     lib: &Lib,
 ) -> Result<DerivationDescription> {
     let expr = include_str!("describe_derivation.nix");
@@ -118,9 +124,16 @@ pub fn describe_derivation(
     }
 
     // Parse the stdout as JSON
-    let description: DerivationDescription = match serde_json::from_str(stdout.trim()) {
+    let mut description: DerivationDescription = match serde_json::from_str(stdout.trim()) {
         Ok(description) => description,
         Err(e) => return Err(Error::SerdeJSON(attribute_path.to_owned(), e)),
+    };
+
+    if *include_nar_info && description.output_path.is_some() {
+        let output_path = description.output_path.clone().unwrap();
+        let narinfo = super::narinfo::NarInfo::fetch(&output_path, binary_caches)?;
+
+        description.nar_info = Some(narinfo);
     };
 
     Ok(description)

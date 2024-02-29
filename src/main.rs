@@ -54,6 +54,15 @@ struct Args {
     #[arg(long, default_value_t = false)]
     offline: bool,
 
+    /// Attempt to fetch nar info from the binary cache
+    #[arg(short = 'n', long, default_value_t = false)]
+    include_nar_info: bool,
+
+    /// List of caches to attempt to fetch narinfo from
+    // TODO: Fetch the default from the system nix
+    #[arg(short, long)]
+    binary_caches: Option<Vec<String>>,
+
     /// Count of workers to spawn to describe derivations
     #[arg(long)]
     n_workers: Option<usize>,
@@ -107,6 +116,8 @@ fn main_with_args(opts: Args) -> Result<(), Box<dyn Error>> {
         opts.system,
         opts.attribute_path,
         opts.offline,
+        opts.include_nar_info,
+        opts.binary_caches,
     )?;
 
     // Create the out writer
@@ -164,6 +175,8 @@ mod tests {
                     output_schema: bool::default(),
                     // Write output to /dev/null to avoid cluttering the test output
                     output_path: Some("/dev/null".to_string()),
+                    include_nar_info: false,
+                    binary_caches: None,
                 };
 
                 log::info!("Running test for {:?}", path);
