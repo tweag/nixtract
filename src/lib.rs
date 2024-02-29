@@ -45,6 +45,8 @@ fn process(
     system: &Option<String>,
     attribute_path: String,
     offline: bool,
+    include_nar_info: bool,
+    binary_caches: &Option<Vec<String>>,
     lib: &nix::lib::Lib,
     // Sender channel to communicate DerivationDescription to the main thread
     tx: mpsc::Sender<DerivationDescription>,
@@ -52,7 +54,15 @@ fn process(
     log::debug!("Processing derivation: {:?}", attribute_path);
 
     // call describe_derivation to get the derivation description
-    let description = nix::describe_derivation(flake_ref, system, &attribute_path, &offline, lib)?;
+    let description = nix::describe_derivation(
+        flake_ref,
+        system,
+        &attribute_path,
+        &offline,
+        &include_nar_info,
+        &binary_caches,
+        lib,
+    )?;
 
     // Send the DerivationDescription to the main thread
     tx.send(description.clone())?;
@@ -91,6 +101,8 @@ fn process(
                 system,
                 build_input.attribute_path,
                 offline,
+                include_nar_info,
+                binary_caches,
                 lib,
                 tx.clone(),
             )
@@ -105,6 +117,8 @@ pub fn nixtract(
     system: Option<impl Into<String>>,
     attribute_path: Option<impl Into<String>>,
     offline: bool,
+    include_nar_info: bool,
+    binary_caches: Option<Vec<String>>,
 ) -> Result<impl Iterator<Item = DerivationDescription>> {
     // Convert the arguments to the expected types
     let flake_ref = flake_ref.into();
@@ -148,6 +162,8 @@ pub fn nixtract(
                 &system,
                 found_drv.attribute_path,
                 offline,
+                include_nar_info,
+                &binary_caches,
                 &lib,
                 tx.clone(),
             ) {

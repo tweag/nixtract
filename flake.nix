@@ -22,6 +22,9 @@
             rustPackages.clippy
             cargo-flamegraph
             cargo-dist
+
+            pkg-config
+            openssl
           ];
           RUST_SRC_PATH = rustPlatform.rustLibSrc;
         };
