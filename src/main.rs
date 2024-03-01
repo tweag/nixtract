@@ -58,8 +58,7 @@ struct Args {
     #[arg(short = 'n', long, default_value_t = false)]
     include_nar_info: bool,
 
-    /// List of caches to attempt to fetch narinfo from
-    // TODO: Fetch the default from the system nix
+    /// List of caches to attempt to fetch narinfo from, defaults to the substituters from nix.conf and the `extra-substituters` from provided flake.
     #[arg(short, long)]
     binary_caches: Option<Vec<String>>,
 

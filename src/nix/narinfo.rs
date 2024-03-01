@@ -17,11 +17,7 @@ pub struct NarInfo {
 }
 
 impl NarInfo {
-    pub fn fetch(output_path: &str, servers: &Option<Vec<String>>) -> crate::error::Result<Self> {
-        let servers = servers
-            .clone()
-            .unwrap_or(vec!["https://cache.nixos.org".to_string()]);
-
+    pub fn fetch(output_path: &str, servers: &Vec<String>) -> crate::error::Result<Self> {
         // Strip the /nix/store prefix, and everything after the first -
         let hash = output_path
             .strip_prefix("/nix/store/")
@@ -114,7 +110,7 @@ mod tests {
     fn test_fetch() {
         let result = NarInfo::fetch(
             "/nix/store/cg8a576pz2yfc1wbhxm1zy4x7lrk8pix-hello-2.12.1",
-            &None,
+            &vec!["cache.nixos.org".to_owned()],
         )
         .unwrap();
 
