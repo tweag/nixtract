@@ -2,7 +2,7 @@ pub type Result<T> = std::result::Result<T, Error>;
 
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
-    #[error("Could not parse the Nix CLI output for attribute path: {0}: {1}")]
+    #[error("Could not parse the Nix CLI output for attribute path/flake ref: {0}: {1}")]
     SerdeJSON(String, serde_json::Error),
 
     #[error("Nix exited with a non-zero exit code: {0:#?}: {1}")]

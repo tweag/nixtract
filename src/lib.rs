@@ -46,7 +46,7 @@ fn process(
     attribute_path: String,
     offline: bool,
     include_nar_info: bool,
-    binary_caches: &Option<Vec<String>>,
+    binary_caches: &Vec<String>,
     lib: &nix::lib::Lib,
     // Sender channel to communicate DerivationDescription to the main thread
     tx: mpsc::Sender<DerivationDescription>,
@@ -60,7 +60,7 @@ fn process(
         &attribute_path,
         &offline,
         &include_nar_info,
-        &binary_caches,
+        binary_caches,
         lib,
     )?;
 
@@ -124,6 +124,11 @@ pub fn nixtract(
     let flake_ref = flake_ref.into();
     let system = system.map(Into::into);
     let attribute_path = attribute_path.map(Into::into);
+
+    let binary_caches = match binary_caches {
+        None => nix::substituters::get_substituters(flake_ref.clone())?,
+        Some(caches) => caches,
+    };
 
     // Writes the `lib.nix` file to the tempdir and stores its path
     let lib = nix::lib::Lib::new()?;

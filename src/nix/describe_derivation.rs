@@ -72,7 +72,7 @@ pub fn describe_derivation(
     attribute_path: &String,
     offline: &bool,
     include_nar_info: &bool,
-    binary_caches: &Option<Vec<String>>,
+    binary_caches: &Vec<String>,
     lib: &Lib,
 ) -> Result<DerivationDescription> {
     let expr = include_str!("describe_derivation.nix");
