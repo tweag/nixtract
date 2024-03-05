@@ -87,4 +87,15 @@ mod tests {
 
         assert!(substituters.is_ok());
     }
+
+    /// This test gets the substituters and passes them along to the
+    /// NarInfo::fetch function to ensure they are correct.
+    #[test]
+    fn test_get_substituters() {
+        let store_path = "/nix/store/1gxz5nfzfnhyxjdyzi04r86sh61y4i00-hello-2.12.1";
+        let substituters = get_substituters("nixpkgs".to_owned()).unwrap();
+        let nar_info = crate::narinfo::NarInfo::fetch(store_path, &substituters);
+
+        assert!(nar_info.is_ok_and(|n| n.is_some_and(|n| n.store_path == store_path)))
+    }
 }
