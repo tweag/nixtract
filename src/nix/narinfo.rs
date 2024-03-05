@@ -147,7 +147,12 @@ impl NarInfo {
                 "References" => references = value.split(' ').map(|s| s.to_string()).collect(),
                 "Sig" => sig = Some(value.to_string()),
                 "CA" => ca = Some(value.to_string()),
-                _ => return Err(crate::error::Error::NarInfoUnknownKey(key.to_string())),
+                _ => {
+                    log::warn!(
+                        "Found an unknown key while parsing a .narinfo file ({}). Please report this issue to github.com/tweag/nixtract",
+                        key
+                    );
+                }
             }
         }
 
