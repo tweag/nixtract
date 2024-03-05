@@ -17,7 +17,7 @@ pub struct NarInfo {
 }
 
 impl NarInfo {
-    pub fn fetch(output_path: &str, servers: &Vec<String>) -> crate::error::Result<Self> {
+    pub fn fetch(output_path: &str, servers: &[String]) -> crate::error::Result<Option<Self>> {
         // Strip the /nix/store prefix, and everything after the first -
         let hash = output_path
             .strip_prefix("/nix/store/")
@@ -26,19 +26,21 @@ impl NarInfo {
             .next()
             .ok_or_else(|| crate::error::Error::NarInfoInvalidPath(output_path.to_string()))?;
 
-        let mut narinfo = String::new();
-
         for server in servers {
-            let url = format!("{}/{}.narinfo", server, hash);
+            let url = format!("https://{}/{}.narinfo", server, hash);
 
             log::info!("Fetching narinfo from {}", url);
             if let Ok(response) = reqwest::blocking::get(&url) {
-                narinfo = response.text()?;
-                break;
+                if response.status().is_success() {
+                    let narinfo = response.text()?;
+                    return Ok(Some(Self::parse(&narinfo)?));
+                } else {
+                    log::warn!("Cache responded with error code: {}", response.status());
+                }
             }
         }
 
-        Self::parse(&narinfo)
+        Ok(None)
     }
 
     pub fn parse(narinfo: &str) -> crate::error::Result<Self> {
@@ -110,7 +112,7 @@ mod tests {
     fn test_fetch() {
         let result = NarInfo::fetch(
             "/nix/store/cg8a576pz2yfc1wbhxm1zy4x7lrk8pix-hello-2.12.1",
-            &vec!["cache.nixos.org".to_owned()],
+            &["cache.nixos.org".to_owned()],
         )
         .unwrap();
 
@@ -132,7 +134,7 @@ mod tests {
             ca: None,
         };
 
-        pretty_assertions::assert_eq!(result, expected);
+        pretty_assertions::assert_eq!(result, Some(expected));
     }
 
     #[test]
