@@ -1,22 +1,71 @@
 #[derive(
     Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize, schemars::JsonSchema,
 )]
+
+/// `NarInfo` is a struct that represents the information about a Nix Archive (nar).
 pub struct NarInfo {
+    /// The path to the store where the nar is located.
     pub store_path: String,
+    /// The URL where the nar can be downloaded.
     pub url: String,
+    /// The compression method used on the nar.
     pub compression: String,
+    /// The hash of the file.
     pub file_hash: String,
+    /// The size of the file in bytes.
     pub file_size: usize,
+    /// The hash of the nar.
     pub nar_hash: String,
+    /// The size of the nar in bytes.
     pub nar_size: usize,
+    /// The deriver of the nar, if any.
     pub deriver: Option<String>,
+    /// The system for which the nar is intended, if specified.
     pub system: Option<String>,
+    /// The references of the nar.
     pub references: Vec<String>,
+    /// The signature of the nar.
     pub sig: String,
+    /// The content addressable storage identifier of the nar, if any.
     pub ca: Option<String>,
 }
 
 impl NarInfo {
+    /// Fetches the narinfo file for a given output path from a list of servers.
+    ///
+    /// # Arguments
+    ///
+    /// * `output_path` - The output path of the narinfo file.
+    /// * `servers` - A slice of server URLs to fetch the narinfo file from.
+    ///
+    /// # Returns
+    ///
+    /// Returns a `Result` containing an `Option` of `NarInfo` if the narinfo file is found, or `None` if it is not found.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the output path is invalid or if there is an error fetching or parsing the narinfo file.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use nixtract::narinfo::NarInfo;
+    ///
+    /// let output_path = "/nix/store/abc123";
+    /// let servers = vec!["server1.example.com".to_string(), "server2.example.com".to_string()];
+    ///
+    /// match NarInfo::fetch(output_path, &servers) {
+    ///     Ok(Some(narinfo)) => {
+    ///         // Narinfo file found, do something with it
+    ///     },
+    ///     Ok(None) => {
+    ///         // Narinfo file not found
+    ///     },
+    ///     Err(err) => {
+    ///         // Error fetching or parsing narinfo file
+    ///     }
+    /// }
+    /// ```
     pub fn fetch(output_path: &str, servers: &[String]) -> crate::error::Result<Option<Self>> {
         // Strip the /nix/store prefix, and everything after the first -
         let hash = output_path
@@ -43,6 +92,28 @@ impl NarInfo {
         Ok(None)
     }
 
+    /// Parses a `narinfo` string into a `NarInfo` struct.
+    ///
+    /// This function takes a `narinfo` string and parses it into a `NarInfo` struct.
+    /// It iterates over each line in the `narinfo` string, splitting it into a key-value pair.
+    /// The key is then matched to a corresponding field in the `NarInfo` struct.
+    /// If a key does not match any field, an error is returned.
+    /// If a required field is missing from the `narinfo` string, an error is returned.
+    ///
+    /// # Arguments
+    ///
+    /// * `narinfo` - A string slice that holds the `narinfo` data.
+    ///
+    /// # Returns
+    ///
+    /// * `Result<NarInfo, Error>` - Returns a `NarInfo` struct if parsing is successful, otherwise returns an `Error`.
+    ///
+    /// # Errors
+    ///
+    /// This function will return an error if:
+    /// * A line in the `narinfo` string does not contain a ':' delimiter.
+    /// * The `narinfo` string contains an unknown key.
+    /// * A required field is missing from the `narinfo` string.
     pub fn parse(narinfo: &str) -> crate::error::Result<Self> {
         let mut store_path = None;
         let mut url = None;
