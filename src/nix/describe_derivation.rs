@@ -72,7 +72,7 @@ pub fn describe_derivation(
     attribute_path: &String,
     offline: &bool,
     include_nar_info: &bool,
-    binary_caches: &Vec<String>,
+    binary_caches: &[String],
     lib: &Lib,
 ) -> Result<DerivationDescription> {
     let expr = include_str!("describe_derivation.nix");
@@ -133,7 +133,7 @@ pub fn describe_derivation(
         let output_path = description.output_path.clone().unwrap();
         let narinfo = super::narinfo::NarInfo::fetch(&output_path, binary_caches)?;
 
-        description.nar_info = Some(narinfo);
+        description.nar_info = narinfo;
     };
 
     Ok(description)
