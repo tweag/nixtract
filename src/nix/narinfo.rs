@@ -76,7 +76,12 @@ impl NarInfo {
             .ok_or_else(|| crate::error::Error::NarInfoInvalidPath(output_path.to_string()))?;
 
         for server in servers {
-            let url = format!("{}/{}.narinfo", server, hash);
+            let url = format!(
+                "{}{}{}.narinfo",
+                server,
+                if server.ends_with('/') { "" } else { "/" },
+                hash
+            );
 
             log::info!("Fetching narinfo from {}", url);
             if let Ok(response) = reqwest::blocking::get(&url) {
