@@ -4,6 +4,7 @@ use crate::error::Result;
 use std::io::Write;
 use tempfile::NamedTempFile;
 
+#[derive(Clone, Debug)]
 pub struct Lib {
     inner: std::path::PathBuf,
 }
