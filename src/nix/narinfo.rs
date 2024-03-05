@@ -76,7 +76,7 @@ impl NarInfo {
             .ok_or_else(|| crate::error::Error::NarInfoInvalidPath(output_path.to_string()))?;
 
         for server in servers {
-            let url = format!("https://{}/{}.narinfo", server, hash);
+            let url = format!("{}/{}.narinfo", server, hash);
 
             log::info!("Fetching narinfo from {}", url);
             if let Ok(response) = reqwest::blocking::get(&url) {
@@ -188,7 +188,7 @@ mod tests {
     fn test_fetch() {
         let result = NarInfo::fetch(
             "/nix/store/cg8a576pz2yfc1wbhxm1zy4x7lrk8pix-hello-2.12.1",
-            &["cache.nixos.org".to_owned()],
+            &["https://cache.nixos.org".to_owned()],
         )
         .unwrap();
 
