@@ -100,15 +100,9 @@ fn process(args: ProcessingArgs) -> Result<()> {
 
             // Call process with the build_input
             process(ProcessingArgs {
-                collected_paths: args.collected_paths,
-                flake_ref: args.flake_ref,
-                system: args.system,
                 attribute_path: build_input.attribute_path,
-                offline: args.offline,
-                include_nar_info: args.include_nar_info,
-                binary_caches: args.binary_caches,
-                lib: args.lib,
                 tx: args.tx.clone(),
+                ..args
             })
         })
         .collect::<Result<Vec<()>>>()?;
