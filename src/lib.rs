@@ -12,8 +12,10 @@
 //!     let system = Some("x86_64-linux");
 //!     let attribute_path = Some("haskellPackages.hello");
 //!     let offline = false;
+//!     let include_nar_info = false;
+//!     let binary_caches = None;
 //!
-//!     let derivations = nixtract(flake_ref, system, attribute_path, offline)?;
+//!     let derivations = nixtract(flake_ref, system, attribute_path, offline, include_nar_info, binary_caches)?;
 //!
 //!     for derivation in derivations {
 //!         println!("{:?}", derivation);
