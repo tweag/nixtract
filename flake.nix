@@ -12,7 +12,15 @@
         naersk-lib = pkgs.callPackage naersk { };
       in
       {
-        defaultPackage = naersk-lib.buildPackage ./.;
+        defaultPackage = naersk-lib.buildPackage {
+          pname = "genealogos";
+          src = ./.;
+
+          # nixtract uses the reqwest crate to query for narinfo on the substituters.
+          # reqwest depends on openssl.
+          nativeBuildInputs = with pkgs; [ pkg-config ];
+          buildInputs = with pkgs; [ openssl ];
+        };
         devShell = with pkgs; mkShell {
           buildInputs = [
             cargo
