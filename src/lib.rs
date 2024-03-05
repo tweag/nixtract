@@ -41,33 +41,34 @@ pub use nix::*;
 
 pub mod error;
 
-fn process(
-    collected_paths: &Arc<Mutex<std::collections::HashSet<String>>>,
-    flake_ref: &String,
-    system: &Option<String>,
-    attribute_path: String,
-    offline: bool,
-    include_nar_info: bool,
-    binary_caches: &Vec<String>,
-    lib: &nix::lib::Lib,
-    // Sender channel to communicate DerivationDescription to the main thread
-    tx: mpsc::Sender<DerivationDescription>,
-) -> Result<()> {
-    log::debug!("Processing derivation: {:?}", attribute_path);
+#[derive(Debug, Clone)]
+pub struct ProcessingArgs<'a> {
+    pub collected_paths: &'a Arc<Mutex<std::collections::HashSet<String>>>,
+    pub flake_ref: &'a String,
+    pub system: &'a Option<String>,
+    pub attribute_path: String,
+    pub offline: bool,
+    pub include_nar_info: bool,
+    pub binary_caches: &'a Vec<String>,
+    pub lib: &'a nix::lib::Lib,
+    pub tx: mpsc::Sender<DerivationDescription>,
+}
 
-    // call describe_derivation to get the derivation description
+fn process(args: ProcessingArgs) -> Result<()> {
+    log::debug!("Processing derivation: {:?}", args.attribute_path);
+
     let description = nix::describe_derivation(
-        flake_ref,
-        system,
-        &attribute_path,
-        &offline,
-        &include_nar_info,
-        binary_caches,
-        lib,
+        args.flake_ref,
+        args.system,
+        &args.attribute_path,
+        &args.offline,
+        &args.include_nar_info,
+        args.binary_caches,
+        args.lib,
     )?;
 
     // Send the DerivationDescription to the main thread
-    tx.send(description.clone())?;
+    args.tx.send(description.clone())?;
 
     // use par_iter to call process on all children of this derivation
     description
@@ -76,7 +77,7 @@ fn process(
         .map(|build_input| -> Result<()> {
             // check if the build_input has already be processed
             let done = {
-                let mut collected_paths = collected_paths.lock().unwrap();
+                let mut collected_paths = args.collected_paths.lock().unwrap();
                 match &build_input.output_path {
                     None => {
                         log::warn!(
@@ -97,17 +98,18 @@ fn process(
                 return Ok(());
             }
 
-            process(
-                collected_paths,
-                flake_ref,
-                system,
-                build_input.attribute_path,
-                offline,
-                include_nar_info,
-                binary_caches,
-                lib,
-                tx.clone(),
-            )
+            // Call process with the build_input
+            process(ProcessingArgs {
+                collected_paths: args.collected_paths,
+                flake_ref: args.flake_ref,
+                system: args.system,
+                attribute_path: build_input.attribute_path,
+                offline: args.offline,
+                include_nar_info: args.include_nar_info,
+                binary_caches: args.binary_caches,
+                lib: args.lib,
+                tx: args.tx.clone(),
+            })
         })
         .collect::<Result<Vec<()>>>()?;
 
@@ -163,17 +165,18 @@ pub fn nixtract(
     // Spawn a new rayon thread to call process on every foundDrv
     rayon::spawn(move || {
         derivations.into_par_iter().for_each(|found_drv| {
-            match process(
-                &collected_paths,
-                &flake_ref,
-                &system,
-                found_drv.attribute_path,
+            let processing_args = ProcessingArgs {
+                collected_paths: &collected_paths,
+                flake_ref: &flake_ref,
+                system: &system,
+                attribute_path: found_drv.attribute_path,
                 offline,
                 include_nar_info,
-                &binary_caches,
-                &lib,
-                tx.clone(),
-            ) {
+                binary_caches: &binary_caches,
+                lib: &lib,
+                tx: tx.clone(),
+            };
+            match process(processing_args) {
                 Ok(_) => {}
                 Err(e) => log::warn!("Error processing derivation: {}", e),
             }
