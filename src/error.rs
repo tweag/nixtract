@@ -28,6 +28,9 @@ pub enum Error {
 
     #[error("The narinfo file could not be fetched: {0}")]
     NarInfoReqwest(#[from] reqwest::Error),
+
+    #[error("The field {0} of the parsed narinfo file was invalid for reason: {1}")]
+    NarInfoInvalidField(String, String),
 }
 
 // Cannot automatically derive using #[from] because of the Box

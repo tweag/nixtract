@@ -8,24 +8,24 @@ pub struct NarInfo {
     pub store_path: String,
     /// The URL where the nar can be downloaded.
     pub url: String,
-    /// The compression method used on the nar.
-    pub compression: String,
-    /// The hash of the file.
-    pub file_hash: String,
-    /// The size of the file in bytes.
-    pub file_size: usize,
     /// The hash of the nar.
     pub nar_hash: String,
     /// The size of the nar in bytes.
     pub nar_size: usize,
+    /// The compression method used on the nar.
+    pub compression: String,
+    /// The hash of the file.
+    pub file_hash: Option<String>,
+    /// The size of the file in bytes.
+    pub file_size: Option<usize>,
     /// The deriver of the nar, if any.
     pub deriver: Option<String>,
     /// The system for which the nar is intended, if specified.
     pub system: Option<String>,
     /// The references of the nar.
-    pub references: Vec<String>,
+    pub references: Option<Vec<String>>,
     /// The signature of the nar.
-    pub sig: String,
+    pub sig: Option<String>,
     /// The content addressable storage identifier of the nar, if any.
     pub ca: Option<String>,
 }
@@ -161,25 +161,39 @@ impl NarInfo {
             }
         }
 
+        // Ensure narSize > 0: https://github.com/nixos/nix/blob/0d26358bda1637e54ebacac18e7b5af7381cf5f3/src/libstore/nar-info.cc#L98
+        if nar_size.unwrap_or(0) == 0 {
+            return Err(crate::error::Error::NarInfoInvalidField(
+                "NarSize".to_string(),
+                "NarSize must be greater than 0".to_string(),
+            ));
+        }
+
+        // If Compression was not present, assume bzip: https://github.com/nixos/nix/blob/0d26358bda1637e54ebacac18e7b5af7381cf5f3/src/libstore/nar-info.cc#L96
+        let compression = compression.unwrap_or_else(|| "bzip".to_string());
+
+        // If References was empty, parse it as None instead of the empty vector
+        let references = if references.is_empty() {
+            None
+        } else {
+            Some(references)
+        };
+
         Ok(NarInfo {
             store_path: store_path
                 .ok_or_else(|| crate::error::Error::NarInfoMissingField("StorePath".to_string()))?,
             url: url.ok_or_else(|| crate::error::Error::NarInfoMissingField("URL".to_string()))?,
-            compression: compression.ok_or_else(|| {
-                crate::error::Error::NarInfoMissingField("Compression".to_string())
-            })?,
-            file_hash: file_hash
-                .ok_or_else(|| crate::error::Error::NarInfoMissingField("FileHash".to_string()))?,
-            file_size: file_size
-                .ok_or_else(|| crate::error::Error::NarInfoMissingField("FileSize".to_string()))?,
             nar_hash: nar_hash
                 .ok_or_else(|| crate::error::Error::NarInfoMissingField("NarHash".to_string()))?,
             nar_size: nar_size
                 .ok_or_else(|| crate::error::Error::NarInfoMissingField("NarSize".to_string()))?,
+            file_hash,
+            file_size,
+            compression,
             deriver,
             system,
             references,
-            sig: sig.ok_or_else(|| crate::error::Error::NarInfoMissingField("Sig".to_string()))?,
+            sig,
             ca,
         })
     }
@@ -201,17 +215,17 @@ mod tests {
             store_path: "/nix/store/cg8a576pz2yfc1wbhxm1zy4x7lrk8pix-hello-2.12.1".to_string(),
             url: "nar/1wjh5hhqfi30fx8pqi0901c9n035qbwsv1rmizvmpydva2lpri2g.nar.xz".to_string(),
             compression: "xz".to_string(),
-            file_hash: "sha256:1wjh5hhqfi30fx8pqi0901c9n035qbwsv1rmizvmpydva2lpri2g".to_string(),
-            file_size: 50184,
+            file_hash: Some("sha256:1wjh5hhqfi30fx8pqi0901c9n035qbwsv1rmizvmpydva2lpri2g".to_string()),
+            file_size: Some(50184),
             nar_hash: "sha256:0scilhfg9qij3wiz1irrln5nb5nk3nxfkns6yqfh2kvbaixywv26".to_string(),
             nar_size: 226552,
             deriver: Some("57677sld6ja212hkv1gh8bdm0amnk1hz-hello-2.12.1.drv".to_string()),
             system: None,
-            references: vec![
+            references: Some(vec![
                 "cg8a576pz2yfc1wbhxm1zy4x7lrk8pix-hello-2.12.1".to_string(),
                 "gqghjch4p1s69sv4mcjksb2kb65rwqjy-glibc-2.38-23".to_string(),
-            ],
-            sig: "cache.nixos.org-1:WzRvexDdRP62D8j/4rAk73vAc4gUtAN7qpZesuRc74+My03WcvWxg/LUztmWikOaMqJQJMvB1ria6AIX30yrDw==".to_string(),
+            ]),
+            sig: Some("cache.nixos.org-1:WzRvexDdRP62D8j/4rAk73vAc4gUtAN7qpZesuRc74+My03WcvWxg/LUztmWikOaMqJQJMvB1ria6AIX30yrDw==".to_string()),
             ca: None,
         };
 
@@ -236,17 +250,17 @@ Sig: cache.nixos.org-1:WzRvexDdRP62D8j/4rAk73vAc4gUtAN7qpZesuRc74+My03WcvWxg/LUz
             store_path: "/nix/store/cg8a576pz2yfc1wbhxm1zy4x7lrk8pix-hello-2.12.1".to_string(),
             url: "nar/1wjh5hhqfi30fx8pqi0901c9n035qbwsv1rmizvmpydva2lpri2g.nar.xz".to_string(),
             compression: "xz".to_string(),
-            file_hash: "sha256:1wjh5hhqfi30fx8pqi0901c9n035qbwsv1rmizvmpydva2lpri2g".to_string(),
-            file_size: 50184,
+            file_hash: Some("sha256:1wjh5hhqfi30fx8pqi0901c9n035qbwsv1rmizvmpydva2lpri2g".to_string()),
+            file_size: Some(50184),
             nar_hash: "sha256:0scilhfg9qij3wiz1irrln5nb5nk3nxfkns6yqfh2kvbaixywv26".to_string(),
             nar_size: 226552,
             deriver: Some("57677sld6ja212hkv1gh8bdm0amnk1hz-hello-2.12.1.drv".to_string()),
             system: None,
-            references: vec![
+            references: Some(vec![
                 "cg8a576pz2yfc1wbhxm1zy4x7lrk8pix-hello-2.12.1".to_string(),
                 "gqghjch4p1s69sv4mcjksb2kb65rwqjy-glibc-2.38-23".to_string(),
-            ],
-            sig: "cache.nixos.org-1:WzRvexDdRP62D8j/4rAk73vAc4gUtAN7qpZesuRc74+My03WcvWxg/LUztmWikOaMqJQJMvB1ria6AIX30yrDw==".to_string(),
+            ]),
+            sig: Some("cache.nixos.org-1:WzRvexDdRP62D8j/4rAk73vAc4gUtAN7qpZesuRc74+My03WcvWxg/LUztmWikOaMqJQJMvB1ria6AIX30yrDw==".to_string()),
             ca: None,
         };
 
