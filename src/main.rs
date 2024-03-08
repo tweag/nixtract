@@ -17,7 +17,7 @@
 //!     e.g. /nix/store/py9jjqsgsya5b9cpps64gchaj8lq2h5i-python3.10-versioneer-0.28
 //! - attribute path: path from the root attribute set to get the desired value.
 //!     e.g. python3Derivations.versioneer
-use std::error::Error;
+use std::{error::Error, io::Write};
 
 use clap::Parser;
 use nixtract::nixtract;
@@ -85,22 +85,35 @@ struct Args {
 fn main() -> Result<(), Box<dyn Error>> {
     let opts: Args = Args::parse();
 
-    // Initialize the logger with the provided verbosity
-    env_logger::Builder::new()
-        .filter_level(opts.verbose.log_level_filter())
-        .init();
+    // Create the out writer
+    let (mut out_writer, to_file) = match opts.output_path.as_deref() {
+        None | Some("-") => (
+            Box::new(std::io::stdout()) as Box<dyn std::io::Write>,
+            false,
+        ),
+        Some(path) => {
+            let file = std::fs::File::create(path)?;
+            (Box::new(file) as Box<dyn std::io::Write>, true)
+        }
+    };
 
     // If schema is requested, print the schema and return
     if opts.output_schema {
         let schema = schemars::schema_for!(nixtract::DerivationDescription);
-        println!("{}", serde_json::to_string_pretty(&schema)?);
+        let schema_string = serde_json::to_string_pretty(&schema)?;
+        out_writer.write_all(schema_string.as_bytes())?;
+        out_writer.write_all(b"\n")?;
         Ok(())
     } else {
-        main_with_args(opts)
+        main_with_args(opts, out_writer, to_file)
     }
 }
 
-fn main_with_args(opts: Args) -> Result<(), Box<dyn Error>> {
+fn main_with_args(
+    opts: Args,
+    mut out_writer: impl Write,
+    to_file: bool,
+) -> Result<(), Box<dyn Error>> {
     // Initialize the rayon thread pool with the provided number of workers
     // or use the default number of workers if none is provided
     if let Some(n_workers) = opts.n_workers {
@@ -108,6 +121,66 @@ fn main_with_args(opts: Args) -> Result<(), Box<dyn Error>> {
             .num_threads(n_workers)
             .build_global()?;
     }
+
+    // Construct the status update channel
+    let (status_tx, status_rx) = std::sync::mpsc::channel();
+
+    // Initialize the logger if not writing to a file, otherwise we defer it to after we created the MultiProcess
+    let mut log_builder = env_logger::Builder::new();
+    log_builder.filter_level(opts.verbose.log_level_filter());
+    if !to_file {
+        // Initialize the logger with the provided verbosity
+        log_builder.init();
+    }
+
+    // If we are outputing to a file and not stdout, start a gui thread that uses indicatif to display progress
+    // If we would always start a MultiProgress progress bar, the output would be mangled by the output we write to stdout ourselves.
+    let handle = if to_file {
+        let spinner_style =
+            indicatif::ProgressStyle::with_template("{prefix:.bold.dim} {spinner} {wide_msg}")?
+                .tick_chars("⠁⠂⠄⡀⢀⠠⠐⠈ ");
+
+        // Create the MultiProgress
+        let multi = indicatif::MultiProgress::new();
+
+        let logger = log_builder.build();
+
+        // Initialize the logger
+        indicatif_log_bridge::LogWrapper::new(multi.clone(), logger).try_init()?;
+
+        Some(std::thread::spawn(move || {
+            // Create a progress bar for rayon thread in the global thread pool
+            let mut progress_bars = Vec::new();
+            for _ in 0..rayon::current_num_threads() {
+                let pb = multi.add(indicatif::ProgressBar::new(0));
+                pb.set_style(spinner_style.clone());
+                progress_bars.push(pb);
+            }
+
+            for message in status_rx {
+                match message {
+                    nixtract::message::Message::Started(id, path) => {
+                        progress_bars[id].set_message(format!("Processing {}", path));
+                    }
+                    nixtract::message::Message::Completed(id, path) => {
+                        progress_bars[id].set_message(format!("Processed {}", path));
+                        progress_bars[id].inc(1);
+                    }
+                    nixtract::message::Message::Skipped(id, path) => {
+                        progress_bars[id].set_message(format!("Skipped {}", path));
+                    }
+                }
+            }
+
+            for pb in progress_bars {
+                pb.finish();
+            }
+
+            multi.clear().expect("Failed to clear the progress bar");
+        }))
+    } else {
+        None
+    };
 
     // Call the nixtract function with the provided arguments
     let results = nixtract(
@@ -117,16 +190,8 @@ fn main_with_args(opts: Args) -> Result<(), Box<dyn Error>> {
         opts.offline,
         opts.include_nar_info,
         opts.binary_caches,
+        Some(status_tx),
     )?;
-
-    // Create the out writer
-    let mut out_writer = match opts.output_path.as_deref() {
-        None | Some("-") => Box::new(std::io::stdout()) as Box<dyn std::io::Write>,
-        Some(path) => {
-            let file = std::fs::File::create(path)?;
-            Box::new(file) as Box<dyn std::io::Write>
-        }
-    };
 
     // Print the results
     for result in results {
@@ -140,6 +205,12 @@ fn main_with_args(opts: Args) -> Result<(), Box<dyn Error>> {
         out_writer.write_all(output.as_bytes())?;
         out_writer.write_all(b"\n")?;
     }
+
+    if let Some(handle) = handle {
+        handle.join().expect("Failed to join the gui thread");
+    }
+
+    println!("Done!");
 
     Ok(())
 }
@@ -180,7 +251,10 @@ mod tests {
 
                 log::info!("Running test for {:?}", path);
 
-                let res = main_with_args(opts);
+                // Set out_writer to /dev/null to avoid cluttering the test output
+                let out_writer = std::fs::File::create("/dev/null").unwrap();
+
+                let res = main_with_args(opts, out_writer, true);
 
                 if res.is_ok() {
                     log::info!("Test for {:?} passed", path);
