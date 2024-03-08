@@ -40,6 +40,7 @@ mod nix;
 pub use nix::*;
 
 pub mod error;
+pub mod message;
 
 #[derive(Debug, Clone)]
 pub struct ProcessingArgs<'a> {
@@ -52,10 +53,24 @@ pub struct ProcessingArgs<'a> {
     pub binary_caches: &'a Vec<String>,
     pub lib: &'a nix::lib::Lib,
     pub tx: mpsc::Sender<DerivationDescription>,
+    /// Used by the worker threads to communicate their status back to the main thread.
+    /// This can for instance be used to update the UI.
+    /// main.rs uses this channel to update the indicatif status bard.
+    pub message_tx: Option<mpsc::Sender<message::Message>>,
 }
 
 fn process(args: ProcessingArgs) -> Result<()> {
     log::debug!("Processing derivation: {:?}", args.attribute_path);
+
+    // Inform the calling thread that we are starting to process the derivation
+    if let Some(message_tx) = &args.message_tx {
+        message_tx
+            .send(message::Message::Started(
+                rayon::current_thread_index().unwrap(),
+                args.attribute_path.clone(),
+            ))
+            .unwrap();
+    }
 
     let description = nix::describe_derivation(
         args.flake_ref,
@@ -66,6 +81,16 @@ fn process(args: ProcessingArgs) -> Result<()> {
         args.binary_caches,
         args.lib,
     )?;
+
+    // Inform the calling thread that we have described the derivation
+    if let Some(message_tx) = &args.message_tx {
+        message_tx
+            .send(message::Message::Completed(
+                rayon::current_thread_index().unwrap(),
+                description.attribute_path.clone(),
+            ))
+            .unwrap();
+    }
 
     // Send the DerivationDescription to the main thread
     args.tx.send(description.clone())?;
@@ -95,6 +120,18 @@ fn process(args: ProcessingArgs) -> Result<()> {
                     "Skipping already processed derivation: {}",
                     build_input.attribute_path.to_string()
                 );
+
+                // Inform calling thread that the derivation was skipped if
+                // requested.
+                if let Some(message_tx) = &args.message_tx {
+                    message_tx
+                        .send(message::Message::Skipped(
+                            rayon::current_thread_index().unwrap(),
+                            build_input.attribute_path.clone(),
+                        ))
+                        .unwrap();
+                }
+
                 return Ok(());
             }
 
@@ -102,6 +139,7 @@ fn process(args: ProcessingArgs) -> Result<()> {
             process(ProcessingArgs {
                 attribute_path: build_input.attribute_path,
                 tx: args.tx.clone(),
+                message_tx: args.message_tx.clone(),
                 ..args
             })
         })
@@ -117,6 +155,7 @@ pub fn nixtract(
     offline: bool,
     include_nar_info: bool,
     binary_caches: Option<Vec<String>>,
+    message_tx: Option<mpsc::Sender<message::Message>>,
 ) -> Result<impl Iterator<Item = DerivationDescription>> {
     // Convert the arguments to the expected types
     let flake_ref = flake_ref.into();
@@ -169,6 +208,7 @@ pub fn nixtract(
                 binary_caches: &binary_caches,
                 lib: &lib,
                 tx: tx.clone(),
+                message_tx: message_tx.clone(),
             };
             match process(processing_args) {
                 Ok(_) => {}
