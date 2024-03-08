@@ -12,3 +12,13 @@ pub enum Message {
     /// The derivation has already been described by another thread
     Skipped(usize, String),
 }
+
+impl fmt::Display for Message {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Message::Started(id, path) => write!(f, "Thread {} started {}", id, path),
+            Message::Completed(id, path) => write!(f, "Thread {} completed {}", id, path),
+            Message::Skipped(id, path) => write!(f, "Thread {} skipped {}", id, path),
+        }
+    }
+}
