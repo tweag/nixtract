@@ -130,7 +130,7 @@ fn main_with_args(
     log_builder.filter_level(opts.verbose.log_level_filter());
     if !to_file {
         // Initialize the logger with the provided verbosity
-        log_builder.init();
+        let _ = log_builder.try_init();
     }
 
     // If we are outputing to a file and not stdout, start a gui thread that uses indicatif to display progress
@@ -146,7 +146,7 @@ fn main_with_args(
         let logger = log_builder.build();
 
         // Initialize the logger
-        indicatif_log_bridge::LogWrapper::new(multi.clone(), logger).try_init()?;
+        let _ = indicatif_log_bridge::LogWrapper::new(multi.clone(), logger).try_init();
 
         Some(std::thread::spawn(move || {
             // Create a progress bar for rayon thread in the global thread pool
