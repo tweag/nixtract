@@ -15,7 +15,7 @@
 //!     let include_nar_info = false;
 //!     let binary_caches = None;
 //!
-//!     let derivations = nixtract(flake_ref, system, attribute_path, offline, include_nar_info, binary_caches)?;
+//!     let derivations = nixtract(flake_ref, system, attribute_path, offline, include_nar_info, binary_caches, None)?;
 //!
 //!     for derivation in derivations {
 //!         println!("{:?}", derivation);
