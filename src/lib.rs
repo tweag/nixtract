@@ -65,10 +65,11 @@ fn process(args: ProcessingArgs) -> Result<()> {
     // Inform the calling thread that we are starting to process the derivation
     if let Some(message_tx) = &args.message_tx {
         message_tx
-            .send(message::Message::Started(
-                rayon::current_thread_index().unwrap(),
-                args.attribute_path.clone(),
-            ))
+            .send(message::Message {
+                status: message::Status::Started,
+                id: rayon::current_thread_index().unwrap(),
+                path: args.attribute_path.clone(),
+            })
             .unwrap();
     }
 
@@ -85,10 +86,11 @@ fn process(args: ProcessingArgs) -> Result<()> {
     // Inform the calling thread that we have described the derivation
     if let Some(message_tx) = &args.message_tx {
         message_tx
-            .send(message::Message::Completed(
-                rayon::current_thread_index().unwrap(),
-                description.attribute_path.clone(),
-            ))
+            .send(message::Message {
+                status: message::Status::Completed,
+                id: rayon::current_thread_index().unwrap(),
+                path: description.attribute_path.clone(),
+            })
             .unwrap();
     }
 
@@ -125,10 +127,11 @@ fn process(args: ProcessingArgs) -> Result<()> {
                 // requested.
                 if let Some(message_tx) = &args.message_tx {
                     message_tx
-                        .send(message::Message::Skipped(
-                            rayon::current_thread_index().unwrap(),
-                            build_input.attribute_path.clone(),
-                        ))
+                        .send(message::Message {
+                            status: message::Status::Skipped,
+                            id: rayon::current_thread_index().unwrap(),
+                            path: build_input.attribute_path.clone(),
+                        })
                         .unwrap();
                 }
 
