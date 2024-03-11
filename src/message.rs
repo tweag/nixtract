@@ -4,21 +4,34 @@
 
 use std::fmt;
 
-pub enum Message {
-    /// Started the describing of the given attribute path
-    Started(usize, String),
-    /// Completed the describing of the given attribute path
-    Completed(usize, String),
-    /// The derivation has already been described by another thread
-    Skipped(usize, String),
+// Define an enum for the status
+pub enum Status {
+    Started,
+    Completed,
+    Skipped,
 }
 
-impl fmt::Display for Message {
+// Combine the struct and enum into a new Message struct
+pub struct Message {
+    pub status: Status,
+    pub id: usize,
+    pub path: String,
+}
+
+// Implement Display for the Status enum
+impl fmt::Display for Status {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Message::Started(id, path) => write!(f, "Thread {} started {}", id, path),
-            Message::Completed(id, path) => write!(f, "Thread {} completed {}", id, path),
-            Message::Skipped(id, path) => write!(f, "Thread {} skipped {}", id, path),
+            Status::Started => write!(f, "started"),
+            Status::Completed => write!(f, "completed"),
+            Status::Skipped => write!(f, "skipped"),
         }
+    }
+}
+
+// Implement Display for the Message enum
+impl fmt::Display for Message {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "Thread {} {} {}", self.id, self.status, self.path)
     }
 }

@@ -20,7 +20,7 @@
 use std::{error::Error, io::Write};
 
 use clap::Parser;
-use nixtract::nixtract;
+use nixtract::{message::Message, nixtract};
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
@@ -123,7 +123,10 @@ fn main_with_args(
     }
 
     // Construct the status update channel
-    let (status_tx, status_rx) = std::sync::mpsc::channel();
+    let (status_tx, status_rx): (
+        std::sync::mpsc::Sender<Message>,
+        std::sync::mpsc::Receiver<Message>,
+    ) = std::sync::mpsc::channel();
 
     // Initialize the logger if not writing to a file, otherwise we defer it to after we created the MultiProcess
     let mut log_builder = env_logger::Builder::new();
@@ -158,16 +161,18 @@ fn main_with_args(
             }
 
             for message in status_rx {
-                match message {
-                    nixtract::message::Message::Started(id, path) => {
-                        progress_bars[id].set_message(format!("Processing {}", path));
+                match message.status {
+                    nixtract::message::Status::Started => {
+                        progress_bars[message.id]
+                            .set_message(format!("Processing {}", message.path));
                     }
-                    nixtract::message::Message::Completed(id, path) => {
-                        progress_bars[id].set_message(format!("Processed {}", path));
-                        progress_bars[id].inc(1);
+                    nixtract::message::Status::Completed => {
+                        progress_bars[message.id]
+                            .set_message(format!("Processed {}", message.path));
+                        progress_bars[message.id].inc(1);
                     }
-                    nixtract::message::Message::Skipped(id, path) => {
-                        progress_bars[id].set_message(format!("Skipped {}", path));
+                    nixtract::message::Status::Skipped => {
+                        progress_bars[message.id].set_message(format!("Skipped {}", message.path));
                     }
                 }
             }
