@@ -4,14 +4,16 @@
 
 use std::fmt;
 
-// Define an enum for the status
+/// Define an enum for the status
+#[derive(serde::Serialize)]
 pub enum Status {
     Started,
     Completed,
     Skipped,
 }
 
-// Combine the struct and enum into a new Message struct
+/// Combine the struct and enum into a new Message struct
+#[derive(serde::Serialize)]
 pub struct Message {
     pub status: Status,
     pub id: usize,
