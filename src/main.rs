@@ -77,6 +77,10 @@ struct Args {
     #[arg(long, default_value_t = false)]
     output_schema: bool,
 
+    /// Ouput only runtime dependencies
+    #[arg(long, short, default_value_t = false)]
+    runtime_only: bool,
+
     /// Write the output to a file instead of stdout or explicitly use `-` for stdout
     #[arg()]
     output_path: Option<String>,
@@ -188,6 +192,7 @@ fn main_with_args(
         opts.attribute_path,
         opts.offline,
         opts.include_nar_info,
+        opts.runtime_only,
         opts.binary_caches,
         Some(status_tx),
     )?;
@@ -242,6 +247,7 @@ mod tests {
                     // Write output to /dev/null to avoid cluttering the test output
                     output_path: Some("/dev/null".to_string()),
                     include_nar_info: false,
+                    runtime_only: false,
                     binary_caches: None,
                 };
 

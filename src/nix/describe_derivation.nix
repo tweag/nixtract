@@ -4,6 +4,7 @@
 #     TARGET_FLAKE_REF: flake reference to evaluate
 #     TARGET_SYSTEM: system to evaluate
 #     TARGET_ATTRIBUTE_PATH: attribute path to the derivation to evaluate
+#     RUNTIME_ONLY: 1 if you only want to include "buildInputs" (only runtime dependencies), 0 if you want all dependencies
 #
 # Example:
 # TARGET_FLAKE_REF="nixpkgs" TARGET_SYSTEM="x86_64-linux" TARGET_ATTRIBUTE_PATH="python3" nix eval --json --file describe-derivation.nix
@@ -16,6 +17,8 @@ let
   targetFlakeRef = builtins.getEnv "TARGET_FLAKE_REF";
   targetAttributePath = builtins.getEnv "TARGET_ATTRIBUTE_PATH";
   targetSystem = let env = builtins.getEnv "TARGET_SYSTEM"; in if env == "" then builtins.currentSystem else env;
+  # 0 is false, everything else is true
+  runtimeOnly = if builtins.getEnv "RUNTIME_ONLY" == "0" then false else true;
 
   # Get pkgs
   targetFlake = builtins.getFlake targetFlakeRef;
@@ -86,6 +89,9 @@ in
               (lib.enumerate (targetValue.${inputType} or [ ]))
           )
       )
-      [ "nativeBuildInputs" "buildInputs" "propagatedBuildInputs" ]
+      (
+        [ "buildInputs" "propagatedBuildInputs" ]
+        ++ nixpkgs.lib.optionals (!runtimeOnly) [ "nativeBuildInputs" ]
+      )
     );
 }
