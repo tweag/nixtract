@@ -66,35 +66,53 @@ pub struct BuiltInput {
     pub output_path: Option<String>,
 }
 
-pub fn describe_derivation(
-    flake_ref: &String,
-    system: &Option<String>,
-    attribute_path: &String,
-    offline: &bool,
-    runtime_only: &bool,
-    include_nar_info: &bool,
-    binary_caches: &[String],
-    lib: &Lib,
-) -> Result<DerivationDescription> {
+#[derive(Clone)]
+pub struct DescribeDerivationArgs<'a> {
+    pub flake_ref: &'a String,
+    pub system: &'a Option<String>,
+    pub attribute_path: String,
+    pub offline: bool,
+    pub runtime_only: bool,
+    pub include_nar_info: bool,
+    pub binary_caches: &'a [String],
+    pub lib: &'a Lib,
+}
+
+impl<'a> From<crate::ProcessingArgs<'a>> for DescribeDerivationArgs<'a> {
+    fn from(args: crate::ProcessingArgs<'a>) -> Self {
+        DescribeDerivationArgs {
+            flake_ref: args.flake_ref,
+            system: args.system,
+            attribute_path: args.attribute_path,
+            offline: args.offline,
+            runtime_only: args.runtime_only,
+            include_nar_info: args.include_nar_info,
+            binary_caches: args.binary_caches,
+            lib: args.lib,
+        }
+    }
+}
+
+pub fn describe_derivation(args: &DescribeDerivationArgs) -> Result<DerivationDescription> {
     let expr = include_str!("describe_derivation.nix");
 
     // Create a scope so env_vars isn't needlessly mutable
     let env_vars: HashMap<String, String> = {
         let mut res = HashMap::from([
-            ("TARGET_FLAKE_REF".to_owned(), flake_ref.to_owned()),
+            ("TARGET_FLAKE_REF".to_owned(), args.flake_ref.to_owned()),
             (
                 "TARGET_ATTRIBUTE_PATH".to_owned(),
-                attribute_path.to_owned(),
+                args.attribute_path.to_owned(),
             ),
             ("NIXPKGS_ALLOW_UNFREE".to_owned(), "1".to_owned()),
             ("NIXPKGS_ALLOW_INSECURE".to_owned(), "1".to_owned()),
             ("NIXPKGS_ALLOW_BROKEN".to_owned(), "1".to_owned()),
             (
                 "RUNTIME_ONLY".to_owned(),
-                if *runtime_only { "1" } else { "0" }.to_owned(),
+                if args.runtime_only { "1" } else { "0" }.to_owned(),
             ),
         ]);
-        if let Some(system) = system {
+        if let Some(system) = args.system {
             res.insert("TARGET_SYSTEM".to_owned(), system.to_owned());
         }
         res
@@ -105,13 +123,13 @@ pub fn describe_derivation(
     command
         .arg("eval")
         .arg("-I")
-        .arg(format!("lib={}", lib.path().to_string_lossy()))
+        .arg(format!("lib={}", args.lib.path().to_string_lossy()))
         .args(["--json", "--expr", expr])
         .arg("--impure")
         .envs(env_vars);
 
     // Add --offline if offline is set
-    if *offline {
+    if args.offline {
         command.arg("--offline");
     }
 
@@ -131,12 +149,12 @@ pub fn describe_derivation(
     // Parse the stdout as JSON
     let mut description: DerivationDescription = match serde_json::from_str(stdout.trim()) {
         Ok(description) => description,
-        Err(e) => return Err(Error::SerdeJSON(attribute_path.to_owned(), e)),
+        Err(e) => return Err(Error::SerdeJSON(args.attribute_path.to_owned(), e)),
     };
 
-    if *include_nar_info && description.output_path.is_some() {
+    if args.include_nar_info && description.output_path.is_some() {
         let output_path = description.output_path.clone().unwrap();
-        let narinfo = super::narinfo::NarInfo::fetch(&output_path, binary_caches)?;
+        let narinfo = super::narinfo::NarInfo::fetch(&output_path, args.binary_caches)?;
 
         description.nar_info = narinfo;
     };

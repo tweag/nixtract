@@ -85,16 +85,7 @@ fn process(args: ProcessingArgs) -> Result<()> {
         },
     )?;
 
-    let description = nix::describe_derivation(
-        args.flake_ref,
-        args.system,
-        &args.attribute_path,
-        &args.offline,
-        &args.runtime_only,
-        &args.include_nar_info,
-        args.binary_caches,
-        args.lib,
-    )?;
+    let description = nix::describe_derivation(&nix::DescribeDerivationArgs::from(args.clone()))?;
 
     // Inform the calling thread that we have described the derivation
     send_message(
