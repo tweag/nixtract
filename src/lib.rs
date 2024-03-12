@@ -13,9 +13,10 @@
 //!     let attribute_path = Some("haskellPackages.hello");
 //!     let offline = false;
 //!     let include_nar_info = false;
+//!     let runtime_only = false;
 //!     let binary_caches = None;
 //!
-//!     let derivations = nixtract(flake_ref, system, attribute_path, offline, include_nar_info, binary_caches, None)?;
+//!     let derivations = nixtract(flake_ref, system, attribute_path, offline, include_nar_info, runtime_only, binary_caches, None)?;
 //!
 //!     for derivation in derivations {
 //!         println!("{:?}", derivation);
@@ -50,6 +51,7 @@ pub struct ProcessingArgs<'a> {
     pub attribute_path: String,
     pub offline: bool,
     pub include_nar_info: bool,
+    pub runtime_only: bool,
     pub binary_caches: &'a Vec<String>,
     pub lib: &'a nix::lib::Lib,
     pub tx: mpsc::Sender<DerivationDescription>,
@@ -88,6 +90,7 @@ fn process(args: ProcessingArgs) -> Result<()> {
         args.system,
         &args.attribute_path,
         &args.offline,
+        &args.runtime_only,
         &args.include_nar_info,
         args.binary_caches,
         args.lib,
@@ -165,6 +168,7 @@ pub fn nixtract(
     attribute_path: Option<impl Into<String>>,
     offline: bool,
     include_nar_info: bool,
+    runtime_only: bool,
     binary_caches: Option<Vec<String>>,
     message_tx: Option<mpsc::Sender<message::Message>>,
 ) -> Result<impl Iterator<Item = DerivationDescription>> {
@@ -215,6 +219,7 @@ pub fn nixtract(
                 system: &system,
                 attribute_path: found_drv.attribute_path,
                 offline,
+                runtime_only,
                 include_nar_info,
                 binary_caches: &binary_caches,
                 lib: &lib,

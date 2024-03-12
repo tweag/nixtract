@@ -71,6 +71,7 @@ pub fn describe_derivation(
     system: &Option<String>,
     attribute_path: &String,
     offline: &bool,
+    runtime_only: &bool,
     include_nar_info: &bool,
     binary_caches: &[String],
     lib: &Lib,
@@ -88,6 +89,10 @@ pub fn describe_derivation(
             ("NIXPKGS_ALLOW_UNFREE".to_owned(), "1".to_owned()),
             ("NIXPKGS_ALLOW_INSECURE".to_owned(), "1".to_owned()),
             ("NIXPKGS_ALLOW_BROKEN".to_owned(), "1".to_owned()),
+            (
+                "RUNTIME_ONLY".to_owned(),
+                if *runtime_only { "1" } else { "0" }.to_owned(),
+            ),
         ]);
         if let Some(system) = system {
             res.insert("TARGET_SYSTEM".to_owned(), system.to_owned());
