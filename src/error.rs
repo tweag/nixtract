@@ -14,6 +14,9 @@ pub enum Error {
     #[error("Erorr when sending data to a mpsc channel: {0}")]
     Mpsc(Box<std::sync::mpsc::SendError<crate::nix::DerivationDescription>>),
 
+    #[error("Error when sending a status message to the caller: {0}")]
+    MessageMpsc(Box<std::sync::mpsc::SendError<crate::message::Message>>),
+
     #[error("The provided value could not be parsed as an integer: {0}")]
     NarInfoParseIntError(#[from] std::num::ParseIntError),
 
@@ -37,5 +40,11 @@ pub enum Error {
 impl From<std::sync::mpsc::SendError<crate::nix::DerivationDescription>> for Error {
     fn from(e: std::sync::mpsc::SendError<crate::nix::DerivationDescription>) -> Self {
         Error::Mpsc(Box::new(e))
+    }
+}
+
+impl From<std::sync::mpsc::SendError<crate::message::Message>> for Error {
+    fn from(e: std::sync::mpsc::SendError<crate::message::Message>) -> Self {
+        Error::MessageMpsc(Box::new(e))
     }
 }
