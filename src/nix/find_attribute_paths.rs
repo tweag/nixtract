@@ -15,8 +15,12 @@ pub struct AttributePaths {
 #[serde(rename_all = "camelCase")]
 pub struct FoundDrv {
     pub attribute_path: String,
-    pub derivation_path: String,
-    pub output_path: String,
+    /// drv path of the derivation
+    /// We discard any values that are not null or String, which occasionally occur (namely false)
+    pub derivation_path: Option<String>,
+    /// The output path of the derivation
+    /// We discard any values that are not null or String, which occasionally occur (namely false)
+    pub output_path: Option<String>,
 }
 
 pub fn find_attribute_paths(
@@ -71,23 +75,24 @@ pub fn find_attribute_paths(
     let mut res: Vec<AttributePaths> = Vec::new();
 
     for line in stderr.lines() {
+        log::info!("find_attribute_paths line: {}", line);
+
         if !line.starts_with("trace: ") {
             log::warn!(
                 "Unexpected output from nix command, attempting to continue: {}",
                 line
             );
         } else {
-            let attribute_paths: AttributePaths =
-                match serde_json::from_str(line.trim_start_matches("trace: ")) {
-                    Ok(attribute_paths) => attribute_paths,
-                    Err(e) => {
-                        return Err(Error::SerdeJSON(
-                            attribute_path.clone().unwrap_or_default(),
-                            e,
-                        ))
-                    }
-                };
-            res.push(attribute_paths);
+            match serde_json::from_str(line.trim_start_matches("trace: ")) {
+                Ok(attribute_paths) => res.push(attribute_paths),
+                Err(e) => {
+                    log::warn!(
+                        "Error parsing found_derivation output: {} {}. Attempting to continue...",
+                        attribute_path.clone().unwrap_or_default(),
+                        e
+                    );
+                }
+            };
         }
     }
 
