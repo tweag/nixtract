@@ -59,19 +59,29 @@ pub struct ProcessingArgs<'a> {
     pub message_tx: Option<mpsc::Sender<message::Message>>,
 }
 
+fn send_message(
+    message_tx: &Option<mpsc::Sender<message::Message>>,
+    message: message::Message,
+) -> Result<()> {
+    if let Some(tx) = message_tx {
+        Ok(tx.send(message)?)
+    } else {
+        Ok(())
+    }
+}
+
 fn process(args: ProcessingArgs) -> Result<()> {
     log::debug!("Processing derivation: {:?}", args.attribute_path);
 
     // Inform the calling thread that we are starting to process the derivation
-    if let Some(message_tx) = &args.message_tx {
-        message_tx
-            .send(message::Message {
-                status: message::Status::Started,
-                id: rayon::current_thread_index().unwrap(),
-                path: args.attribute_path.clone(),
-            })
-            .unwrap();
-    }
+    send_message(
+        &args.message_tx,
+        message::Message {
+            status: message::Status::Started,
+            id: rayon::current_thread_index().unwrap(),
+            path: args.attribute_path.clone(),
+        },
+    )?;
 
     let description = nix::describe_derivation(
         args.flake_ref,
@@ -84,15 +94,14 @@ fn process(args: ProcessingArgs) -> Result<()> {
     )?;
 
     // Inform the calling thread that we have described the derivation
-    if let Some(message_tx) = &args.message_tx {
-        message_tx
-            .send(message::Message {
-                status: message::Status::Completed,
-                id: rayon::current_thread_index().unwrap(),
-                path: description.attribute_path.clone(),
-            })
-            .unwrap();
-    }
+    send_message(
+        &args.message_tx,
+        message::Message {
+            status: message::Status::Completed,
+            id: rayon::current_thread_index().unwrap(),
+            path: description.attribute_path.clone(),
+        },
+    )?;
 
     // Send the DerivationDescription to the main thread
     args.tx.send(description.clone())?;
@@ -125,15 +134,14 @@ fn process(args: ProcessingArgs) -> Result<()> {
 
                 // Inform calling thread that the derivation was skipped if
                 // requested.
-                if let Some(message_tx) = &args.message_tx {
-                    message_tx
-                        .send(message::Message {
-                            status: message::Status::Skipped,
-                            id: rayon::current_thread_index().unwrap(),
-                            path: build_input.attribute_path.clone(),
-                        })
-                        .unwrap();
-                }
+                send_message(
+                    &args.message_tx,
+                    message::Message {
+                        status: message::Status::Skipped,
+                        id: rayon::current_thread_index().unwrap(),
+                        path: build_input.attribute_path.clone(),
+                    },
+                )?;
 
                 return Ok(());
             }
