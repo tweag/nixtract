@@ -122,7 +122,6 @@ fn main_with_args(
             .build_global()?;
     }
 
-    // Construct the status update channel
     let (status_tx, status_rx): (
         std::sync::mpsc::Sender<Message>,
         std::sync::mpsc::Receiver<Message>,
@@ -143,12 +142,8 @@ fn main_with_args(
             indicatif::ProgressStyle::with_template("{prefix:.bold.dim} {spinner} {wide_msg}")?
                 .tick_chars("⠁⠂⠄⡀⢀⠠⠐⠈ ");
 
-        // Create the MultiProgress
         let multi = indicatif::MultiProgress::new();
-
         let logger = log_builder.build();
-
-        // Initialize the logger
         let _ = indicatif_log_bridge::LogWrapper::new(multi.clone(), logger).try_init();
 
         Some(std::thread::spawn(move || {
@@ -187,7 +182,6 @@ fn main_with_args(
         None
     };
 
-    // Call the nixtract function with the provided arguments
     let results = nixtract(
         opts.flake_ref,
         opts.system,
@@ -198,7 +192,7 @@ fn main_with_args(
         Some(status_tx),
     )?;
 
-    // Print the results
+    // Print the results to the provided output, and pretty print if specified
     for result in results {
         let output = if opts.pretty {
             serde_json::to_string_pretty(&result)?
@@ -206,7 +200,6 @@ fn main_with_args(
             serde_json::to_string(&result)?
         };
 
-        // Append to the out_writer
         out_writer.write_all(output.as_bytes())?;
         out_writer.write_all(b"\n")?;
     }
@@ -214,8 +207,6 @@ fn main_with_args(
     if let Some(handle) = handle {
         handle.join().expect("Failed to join the gui thread");
     }
-
-    println!("Done!");
 
     Ok(())
 }
