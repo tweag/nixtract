@@ -86,7 +86,7 @@ To extract the data from the `nixpkgs` of your flake registry and output to stdo
 $ nixtract
 ```
 
-you can specify a file path directly instead
+you can also specify an output file path directly instead
 
 ```console
 $ nixtract derivations.jsonl
@@ -98,16 +98,22 @@ in order to extract from a specific flake, use `--target-flake-ref` or `-f`:
 $ nixtract --target-flake-ref 'github:nixos/nixpkgs/23.05'
 ```
 
-in order to extract from a specific attribute, use `--target-attribute` or `-a`:
+in order to extract a specific attribute, use `--target-attribute` or `-a`:
 
 ```console
 $ nixtract --target-attribute-path 'haskellPackages.hello'
 ```
 
-in order to extract for a specific system, use `--target-system` or `-s`:
+in order to extract for a system different from your own, use `--target-system` or `-s`:
 
 ```console
 $ nixtract --target-system 'x86_64-darwin'
+```
+
+in order to only consider runtime dependencies, use `--runtime-only` or `-r`:
+
+```console
+$ nixtract --runtime-only
 ```
 
 ### Understanding the output
