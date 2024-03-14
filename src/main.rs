@@ -20,7 +20,7 @@
 use std::{error::Error, io::Write};
 
 use clap::Parser;
-use nixtract::{message::Message, nixtract};
+use nixtract::{message::Message, nixtract, NixtractConfig};
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
@@ -84,6 +84,18 @@ struct Args {
     /// Write the output to a file instead of stdout or explicitly use `-` for stdout
     #[arg()]
     output_path: Option<String>,
+}
+
+impl From<&Args> for NixtractConfig {
+    fn from(args: &Args) -> Self {
+        NixtractConfig {
+            offline: args.offline,
+            include_nar_info: args.include_nar_info,
+            runtime_only: args.runtime_only,
+            binary_caches: args.binary_caches.clone(),
+            message_tx: None,
+        }
+    }
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
@@ -186,16 +198,12 @@ fn main_with_args(
         None
     };
 
-    let results = nixtract(
-        opts.flake_ref,
-        opts.system,
-        opts.attribute_path,
-        opts.offline,
-        opts.include_nar_info,
-        opts.runtime_only,
-        opts.binary_caches,
-        Some(status_tx),
-    )?;
+    let config = NixtractConfig {
+        message_tx: Some(status_tx),
+        ..(&opts).into()
+    };
+
+    let results = nixtract(opts.flake_ref, opts.system, opts.attribute_path, config)?;
 
     // Print the results to the provided output, and pretty print if specified
     for result in results {

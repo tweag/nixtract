@@ -4,19 +4,17 @@
 //! Alternatively, the underlying functions can be used directly to extract information from nix derivations.
 //! ## Example
 //! ```no_run
-//! use nixtract::nixtract;
+//! use nixtract::{nixtract, NixtractConfig};
+
 //! use std::error::Error;
 //!
 //! fn main() -> Result<(), Box<dyn Error>> {
 //!     let flake_ref = "nixpkgs";
 //!     let system = Some("x86_64-linux");
 //!     let attribute_path = Some("haskellPackages.hello");
-//!     let offline = false;
-//!     let include_nar_info = false;
-//!     let runtime_only = false;
-//!     let binary_caches = None;
+//!     let config = NixtractConfig::default();
 //!
-//!     let derivations = nixtract(flake_ref, system, attribute_path, offline, include_nar_info, runtime_only, binary_caches, None)?;
+//!     let derivations = nixtract(flake_ref, system, attribute_path, config)?;
 //!
 //!     for derivation in derivations {
 //!         println!("{:?}", derivation);
@@ -153,22 +151,27 @@ fn process(args: ProcessingArgs) -> Result<()> {
     Ok(())
 }
 
+#[derive(Default)]
+pub struct NixtractConfig {
+    pub offline: bool,
+    pub include_nar_info: bool,
+    pub runtime_only: bool,
+    pub binary_caches: Option<Vec<String>>,
+    pub message_tx: Option<mpsc::Sender<message::Message>>,
+}
+
 pub fn nixtract(
     flake_ref: impl Into<String>,
     system: Option<impl Into<String>>,
     attribute_path: Option<impl Into<String>>,
-    offline: bool,
-    include_nar_info: bool,
-    runtime_only: bool,
-    binary_caches: Option<Vec<String>>,
-    message_tx: Option<mpsc::Sender<message::Message>>,
+    config: NixtractConfig,
 ) -> Result<impl Iterator<Item = DerivationDescription>> {
     // Convert the arguments to the expected types
     let flake_ref = flake_ref.into();
     let system = system.map(Into::into);
     let attribute_path = attribute_path.map(Into::into);
 
-    let binary_caches = match binary_caches {
+    let binary_caches = match config.binary_caches {
         None => nix::substituters::get_substituters(flake_ref.clone())?,
         Some(caches) => caches,
     };
@@ -193,7 +196,7 @@ pub fn nixtract(
 
     // call find_attribute_paths to get the initial set of derivations
     let attribute_paths =
-        nix::find_attribute_paths(&flake_ref, &system, &attribute_path, &offline, &lib)?;
+        nix::find_attribute_paths(&flake_ref, &system, &attribute_path, &config.offline, &lib)?;
 
     // Combine all AttributePaths into a single Vec
     let mut derivations: Vec<FoundDrv> = Vec::new();
@@ -209,13 +212,13 @@ pub fn nixtract(
                 flake_ref: &flake_ref,
                 system: &system,
                 attribute_path: found_drv.attribute_path,
-                offline,
-                runtime_only,
-                include_nar_info,
+                offline: config.offline,
+                runtime_only: config.runtime_only,
+                include_nar_info: config.include_nar_info,
                 binary_caches: &binary_caches,
                 lib: &lib,
                 tx: tx.clone(),
-                message_tx: message_tx.clone(),
+                message_tx: config.message_tx.clone(),
             };
             match process(processing_args) {
                 Ok(_) => {}
