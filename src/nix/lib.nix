@@ -73,7 +73,12 @@ rec {
 
   /* Utility function for safe evaluation of any value, null if evaluation fails
   */
-  safeEval = v: (builtins.tryEval v).value or null;
+  safeEval = v: let
+    r = builtins.tryEval v;
+  in
+    if r.success
+    then r.value
+    else null;
 
   /* Utility specific to nixpkgs, as nixpkgs prevents computing some fields if meta.platforms does not contain the target system
     Args:
