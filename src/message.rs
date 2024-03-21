@@ -34,6 +34,6 @@ impl fmt::Display for Status {
 // Implement Display for the Message enum
 impl fmt::Display for Message {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "Thread {} {} {}", self.id, self.status, self.path)
+        write!(f, "{} {}", self.status, self.path)
     }
 }

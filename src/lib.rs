@@ -151,7 +151,7 @@ fn process(args: ProcessingArgs) -> Result<()> {
     Ok(())
 }
 
-#[derive(Default)]
+#[derive(Debug, Default, Clone)]
 pub struct NixtractConfig {
     pub offline: bool,
     pub include_nar_info: bool,
