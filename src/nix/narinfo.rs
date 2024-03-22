@@ -84,13 +84,17 @@ impl NarInfo {
             );
 
             log::info!("Fetching narinfo from {}", url);
-            if let Ok(response) = reqwest::blocking::get(&url) {
-                if response.status().is_success() {
-                    let narinfo = response.text()?;
-                    return Ok(Some(Self::parse(&narinfo)?));
-                } else {
-                    log::warn!("Cache responded with error code: {}", response.status());
+            match reqwest::blocking::get(&url) {
+                Ok(response) => {
+                    if response.status().is_success() {
+                        let narinfo = response.text()?;
+                        let narinfo = Self::parse(&narinfo)?;
+                        return Ok(Some(narinfo));
+                    } else {
+                        log::warn!("Cache responded with error code: {}", response.status());
+                    }
                 }
+                Err(err) => log::warn!("Could not fetch narinfo: {}", err),
             }
         }
 
