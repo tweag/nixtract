@@ -229,3 +229,65 @@ pub fn nixtract(
 
     Ok(rx.into_iter())
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use core::panic;
+    use std::fs;
+
+    fn init() {
+        let _ = env_logger::builder().is_test(true).try_init();
+    }
+
+    #[test]
+    fn test_main_fixtures() -> Result<()> {
+        init();
+
+        // For every subdirectory in the tests/fixtures directory
+        for entry in fs::read_dir("tests/fixtures").unwrap() {
+            let entry = entry.unwrap();
+            let path = entry.path().canonicalize().unwrap();
+            if path.is_dir() {
+                let config = NixtractConfig {
+                    runtime_only: false,
+                    binary_caches: None,
+                    offline: false,
+                    include_nar_info: false,
+                    message_tx: None,
+                };
+
+                log::info!("Running test for {:?}", path);
+
+                let test_name = path
+                    .components()
+                    .last()
+                    .unwrap()
+                    .as_os_str()
+                    .to_str()
+                    .unwrap();
+                let flake_ref = path.to_str().unwrap();
+                let system: Option<String> = None;
+                let attribute_path: Option<String> = None;
+
+                let mut descriptions = nixtract(flake_ref, system, attribute_path, config).unwrap();
+
+                match test_name {
+                    "flake-direct-buildInput" => {}
+                    "flake-direct-nativeBuildInput" => {}
+                    "flake-three-levels" => {}
+                    "flake-trivial-rust" => {
+                        assert!(descriptions.any(|d| {
+                            d.src.is_some_and(|s| {
+                                s.git_repo_url == "https://github.com/hello-lang/Rust.git"
+                            })
+                        }));
+                    }
+                    "flake-trivial" => {}
+                    s => panic!("Unknown test: {}", s),
+                }
+            }
+        }
+        Ok(())
+    }
+}
