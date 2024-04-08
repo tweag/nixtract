@@ -9,6 +9,7 @@
 
 ### Fixed
 - [#38](https://github.com/tweag/nixtract/pull/38) fixed bug where found derivations were parsed incorrectly
+- [#42](https://github.com/tweag/nixtract/pull/42) reintroduced the src field in the derivation description
 
 ### Changed
 - [#36](https://github.com/tweag/nixtract/pull/36) moved all nixtract configuration options into a single struct passed to the `nixtract` function
