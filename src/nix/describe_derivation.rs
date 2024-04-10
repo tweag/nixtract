@@ -126,6 +126,7 @@ pub fn describe_derivation(args: &DescribeDerivationArgs) -> Result<DerivationDe
         .arg(format!("lib={}", args.lib.path().to_string_lossy()))
         .args(["--json", "--expr", expr])
         .arg("--impure")
+        .args(["--extra-experimental-features", "flakes nix-command"])
         .envs(env_vars);
 
     // Add --offline if offline is set
