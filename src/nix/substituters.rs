@@ -14,6 +14,7 @@ fn from_flake_ref(flake_ref: &str) -> Result<Substituters> {
     let output = std::process::Command::new("nix")
         .args(["eval", "--json", "--impure"])
         .args(["--expr", &expr])
+        .args(["--extra-experimental-features", "flakes nix-command"])
         .output()?;
 
     let stdout = String::from_utf8_lossy(&output.stdout);
@@ -35,6 +36,7 @@ fn from_flake_ref(flake_ref: &str) -> Result<Substituters> {
 fn from_nix_conf() -> Result<Substituters> {
     let output = std::process::Command::new("nix")
         .args(["show-config", "--json"])
+        .args(["--extra-experimental-features", "flakes nix-command"])
         .output()?;
 
     let stdout = String::from_utf8_lossy(&output.stdout);

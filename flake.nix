@@ -13,7 +13,7 @@
       in
       {
         defaultPackage = naersk-lib.buildPackage {
-          pname = "genealogos";
+          pname = "nixtract";
           src = ./.;
 
           # nixtract uses the reqwest crate to query for narinfo on the substituters.

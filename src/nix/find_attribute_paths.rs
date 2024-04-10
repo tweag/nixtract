@@ -57,6 +57,7 @@ pub fn find_attribute_paths(
         .arg(format!("lib={}", lib.path().to_string_lossy()))
         .args(["--json", "--expr", expr])
         .arg("--impure")
+        .args(["--extra-experimental-features", "flakes nix-command"])
         .envs(env_vars);
 
     if *offline {
