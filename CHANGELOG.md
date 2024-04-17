@@ -2,6 +2,8 @@
 <!-- We follow the Keep a Changelog standard https://keepachangelog.com/en/1.0.0/ -->
 
 ## [Unreleased]
+
+## [0.3.0] - 2024-04-17
 ### Added
 - [#34](https://github.com/tweag/nixtract/pull/34) add option to provide nixtract with a status communication channel
 - [#36](https://github.com/tweag/nixtract/pull/36) add option to only extract runtime dependencies
@@ -14,3 +16,5 @@
 
 ### Changed
 - [#36](https://github.com/tweag/nixtract/pull/36) moved all nixtract configuration options into a single struct passed to the `nixtract` function
+
+[0.3.0]: https://github.com/tweag/nixtract/compare/v0.2.0...v0.3.0
