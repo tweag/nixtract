@@ -23,9 +23,10 @@
           ];
           buildInputs = with pkgs; ([
             openssl
-          ] ++ lib.optionals stdenv.isDarwin [
-            darwin.apple_sdk.frameworks.SystemConfiguration
-          ]);
+          ] ++ lib.optionals stdenv.isDarwin (with darwin; [
+            apple_sdk.frameworks.SystemConfiguration
+            libiconv
+          ]));
         };
         devShell = with pkgs; mkShell {
           buildInputs = [
@@ -39,9 +40,10 @@
 
             pkg-config
             openssl
-          ] ++ lib.optionals stdenv.isDarwin [
+          ] ++ lib.optionals stdenv.isDarwin (with darwin; [
             darwin.apple_sdk.frameworks.SystemConfiguration
-          ];
+            libiconv
+          ]);
 
           RUST_SRC_PATH = rustPlatform.rustLibSrc;
         };
