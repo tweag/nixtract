@@ -18,8 +18,14 @@
 
           # nixtract uses the reqwest crate to query for narinfo on the substituters.
           # reqwest depends on openssl.
-          nativeBuildInputs = with pkgs; [ pkg-config ];
-          buildInputs = with pkgs; [ openssl ];
+          nativeBuildInputs = with pkgs; [
+            pkg-config
+          ];
+          buildInputs = with pkgs; ([
+            openssl
+          ] ++ lib.optionals stdenv.isDarwin [
+            darwin.apple_sdk.frameworks.SystemConfiguration
+          ]);
         };
         devShell = with pkgs; mkShell {
           buildInputs = [
@@ -33,7 +39,10 @@
 
             pkg-config
             openssl
+          ] ++ lib.optionals stdenv.isDarwin [
+            darwin.apple_sdk.frameworks.SystemConfiguration
           ];
+
           RUST_SRC_PATH = rustPlatform.rustLibSrc;
         };
       });
