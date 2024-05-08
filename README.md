@@ -12,8 +12,8 @@ We [invite you](https://discord.gg/53XwX7Ft) to join our [Discord channel](https
 ### Requirements
 
 * Nix >= 2.4
-  * experimental feature `nix-command` needs to be enabled: [Nix command - NixOS Wiki](https://nixos.wiki/wiki/Nix_command)
-  * experimental feature `flakes` needs to be enabled: [Flakes - NixOS Wiki](https://nixos.wiki/wiki/Flakes)
+  * experimental feature `nix-command` needs to be enabled: [Nix command - NixOS Wiki](https://wiki.nixos.org/wiki/Nix_command)
+  * experimental feature `flakes` needs to be enabled: [Flakes - NixOS Wiki](https://wiki.nixos.org/wiki/Flakes)
 
 ### Set up
 
