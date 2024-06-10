@@ -101,8 +101,14 @@ in
           )
       )
       (
-        [ "buildInputs" "propagatedBuildInputs" ]
-        ++ nixpkgs.lib.optionals (!runtimeOnly) [ "nativeBuildInputs" ]
+        [ "buildInputs" "propagatedBuildInputs" "defaultBuildInputs" ]
+          ++ nixpkgs.lib.optionals (!runtimeOnly) [ "nativeBuildInputs" "defaultNativeBuildInputs" ]
       )
-    );
+    ) ++ nixpkgs.lib.optional (targetValue ? stdenv)
+    {
+      build_input_type = "stdenv";
+      attribute_path = targetAttributePath + ".stdenv";
+      output_path = lib.safePlatformDrvEval targetSystem (drv: drv.outPath) targetValue.stdenv;
+    }
+  ;
 }
