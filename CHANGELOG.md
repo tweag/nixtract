@@ -2,6 +2,8 @@
 <!-- We follow the Keep a Changelog standard https://keepachangelog.com/en/1.0.0/ -->
 
 ## [Unreleased]
+### Added
+- [#48](https://github.com/tweag/nixtract/pull/48) adds stdenv to one of the attributes of a package that nixtract explores
 
 ## [0.3.0] - 2024-04-17
 ### Added
