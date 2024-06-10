@@ -81,28 +81,36 @@ in
       (drv: drv.outPath)
       targetValue;
   outputs = map (name: { inherit name; output_path = lib.safePlatformDrvEval targetSystem (drv: drv.outPath) targetValue.${name}; }) (targetValue.outputs or [ ]);
-  build_inputs = nixpkgs.lib.lists.flatten
-    (map
-      (inputType:
-        map
-          (elem:
-            {
-              build_input_type = nixpkgs.lib.removeSuffix "s" (lib.toSnakeCase inputType);
-              attribute_path = targetAttributePath + ".${inputType}.${builtins.toString elem.index}";
-              output_path = lib.safePlatformDrvEval targetSystem (drv: drv.outPath) elem.value;
-            }
-          )
-          (
-            # only keep derivations in inputs
-            # TODO include path objects
-            builtins.filter
-              (elem: nixpkgs.lib.isDerivation elem.value)
-              (lib.enumerate (targetValue.${inputType} or [ ]))
-          )
+  build_inputs =
+    nixpkgs.lib.concatMap
+      ({ name, value }:
+        if nixpkgs.lib.isDerivation value then
+          [{
+            build_input_type = name;
+            attribute_path = "${targetAttributePath}.drvAttrs.${name}";
+            output_path = lib.safePlatformDrvEval targetSystem (drv: drv.outPath) value;
+          }]
+        else if nixpkgs.lib.isList value then
+          nixpkgs.lib.concatMap
+            ({ index, value }:
+              if nixpkgs.lib.isDerivation value then
+                [{
+                  build_input_type = name;
+                  attribute_path = "${targetAttributePath}.drvAttrs.${name}.${builtins.toString index}";
+                  output_path = lib.safePlatformDrvEval targetSystem (drv: drv.outPath) value;
+                }]
+              else [ ]
+            )
+            (lib.enumerate value)
+        else [ ]
       )
-      (
-        [ "buildInputs" "propagatedBuildInputs" ]
-        ++ nixpkgs.lib.optionals (!runtimeOnly) [ "nativeBuildInputs" ]
-      )
-    );
+      (if runtimeOnly
+      then
+        (
+          nixpkgs.lib.optional (targetValue ? buildInputs) targetValue.buildInputs
+          ++ nixpkgs.lib.optional (targetValue ? propagatedBuildInputs) targetValue.propagatedBuildInputs
+        )
+      else
+        nixpkgs.lib.attrsToList targetValue.drvAttrs
+      );
 }
