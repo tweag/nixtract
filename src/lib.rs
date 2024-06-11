@@ -85,6 +85,11 @@ fn process(args: ProcessingArgs) -> Result<()> {
 
     let description = nix::describe_derivation(&nix::DescribeDerivationArgs::from(args.clone()))?;
 
+    // Abort if we have reached to bootstrap stage
+    if description.name == "bootstrap-tools" || description.name.starts_with("bootstrap-stage") {
+        return Ok(());
+    }
+
     // Inform the calling thread that we have described the derivation
     send_message(
         &args.message_tx,
