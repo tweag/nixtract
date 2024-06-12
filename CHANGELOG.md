@@ -5,9 +5,6 @@
 ### Added
 - [#49](https://github.com/tweag/nixtract/pull/49) rewrite describe_derivation to include all found derivations (but actively skip bootstrap packages)
 
-### Fixed
-- [#50](https://github.com/tweag/nixtract/pull/50) fix an issue where the root attribute was never assumed to be a derivation
-
 ## [0.3.0] - 2024-04-17
 ### Added
 - [#34](https://github.com/tweag/nixtract/pull/34) add option to provide nixtract with a status communication channel

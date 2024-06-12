@@ -72,4 +72,4 @@ let
   ;
 in
 # to prevent accumlutation in memory
-lib.collect (x: false) (builtins.mapAttrs (findRecursively "") (builtins.listToAttrs [{ name = targetAttributePath; value = targetRootValue; }]))
+lib.collect (x: false) (builtins.mapAttrs (findRecursively targetAttributePath) targetRootValue)
