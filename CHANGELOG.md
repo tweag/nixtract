@@ -8,6 +8,9 @@
 ### Removed
 - [#50](https://github.com/tweag/nixtract/pull/50) excludes fixed output derivations in nixtract output
 
+### Fixed
+- [#53](https://github.com/tweag/nixtract/pull/53) resolve an issue where some derivations were analyzed multiple times
+
 ## [0.3.0] - 2024-04-17
 ### Added
 - [#34](https://github.com/tweag/nixtract/pull/34) add option to provide nixtract with a status communication channel
