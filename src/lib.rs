@@ -209,6 +209,16 @@ pub fn nixtract(
         derivations.extend(attribute_path.found_drvs);
     }
 
+    for found_drv in derivations.clone() {
+        match found_drv.output_path {
+            None => log::warn!("Found a derivation without an output_path: {:?}", found_drv),
+            Some(output_path) => {
+                let mut collected_paths = collected_paths.lock().unwrap();
+                collected_paths.insert(output_path);
+            }
+        }
+    }
+
     // Spawn a new rayon thread to call process on every foundDrv
     rayon::spawn(move || {
         derivations.into_par_iter().for_each(|found_drv| {
