@@ -50,7 +50,7 @@ in
       broken = (builtins.tryEval (targetValue.meta.broken or false)).value;
       homepage = (builtins.tryEval (targetValue.meta.homepage or "")).value;
       cpe = (builtins.tryEval (targetValue.meta.identifiers.v1.cpe or [])).value;
-      purl = (builtins.tryEval (targetValue.meta.identifiers.v1.purl or "")).value;
+      purl = (builtins.tryEval (targetValue.meta.identifiers.v1.purl or null)).value;
       licenses = (builtins.tryEval (
         if builtins.isAttrs (targetValue.meta.license or null)
         # In case the license attribute is not a list, we produce a singleton list to be consistent
