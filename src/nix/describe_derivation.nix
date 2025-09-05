@@ -49,7 +49,8 @@ in
       version = (builtins.tryEval (targetValue.version or "")).value;
       broken = (builtins.tryEval (targetValue.meta.broken or false)).value;
       homepage = (builtins.tryEval (targetValue.meta.homepage or "")).value;
-      cpe = (builtins.tryEval (targetValue.meta.identifiers.v1.cpe or [])).value;
+      cpe = (builtins.tryEval (targetValue.meta.identifiers.v1.cpe or null)).value;
+      possibleCPEs = (builtins.tryEval (targetValue.meta.identifiers.v1.possibleCPEs or [])).value;
       purl = (builtins.tryEval (targetValue.meta.identifiers.v1.purl or null)).value;
       licenses = (builtins.tryEval (
         if builtins.isAttrs (targetValue.meta.license or null)
