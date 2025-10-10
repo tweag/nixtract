@@ -52,6 +52,7 @@ in
       cpe = (builtins.tryEval (targetValue.meta.identifiers.v1.cpe or null)).value;
       possibleCPEs = (builtins.tryEval (targetValue.meta.identifiers.v1.possibleCPEs or [])).value;
       purl = (builtins.tryEval (targetValue.meta.identifiers.v1.purl or null)).value;
+      purls = (builtins.tryEval (targetValue.meta.identifiers.v1.purls or [])).value;
       licenses = (builtins.tryEval (
         if builtins.isAttrs (targetValue.meta.license or null)
         # In case the license attribute is not a list, we produce a singleton list to be consistent
