@@ -43,6 +43,10 @@ pub struct NixpkgsMetadata {
     pub broken: bool,
     pub homepage: String,
     pub licenses: Option<Vec<License>>,
+    pub cpe: Option<String>,
+    pub possibleCPEs: Vec<String>,
+    pub purl: Option<String>,
+    pub purls: Vec<String>,
 }
 
 #[derive(Deserialize, Serialize, Debug, Eq, PartialEq, Clone, JsonSchema)]
