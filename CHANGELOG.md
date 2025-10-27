@@ -4,7 +4,7 @@
 ## [Unreleased]
 ### Added
 - [#49](https://github.com/tweag/nixtract/pull/49) rewrite describe_derivation to include all found derivations (but actively skip bootstrap packages)
-- [#53](https://github.com/tweag/nixtract/pull/59) implement CPE and pURL reference
+- [#53](https://github.com/tweag/nixtract/pull/59) & [#60](https://github.com/tweag/nixtract/pull/60) implement CPE and pURL reference
 
 ### Removed
 - [#50](https://github.com/tweag/nixtract/pull/50) excludes fixed output derivations in nixtract output
