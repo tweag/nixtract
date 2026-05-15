@@ -126,7 +126,7 @@ fn process(args: ProcessingArgs) -> Result<()> {
             if done {
                 log::debug!(
                     "Skipping already processed derivation: {}",
-                    build_input.attribute_path.to_string()
+                    build_input.attribute_path
                 );
 
                 // Inform calling thread that the derivation was skipped if
