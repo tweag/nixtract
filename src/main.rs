@@ -14,9 +14,9 @@
 //!
 //! Glossary:
 //! - output path: full path of the realization of the derivation in the Nix store.
-//!     e.g. /nix/store/py9jjqsgsya5b9cpps64gchaj8lq2h5i-python3.10-versioneer-0.28
+//!   e.g. /nix/store/py9jjqsgsya5b9cpps64gchaj8lq2h5i-python3.10-versioneer-0.28
 //! - attribute path: path from the root attribute set to get the desired value.
-//!     e.g. python3Derivations.versioneer
+//!   e.g. python3Derivations.versioneer
 use std::{error::Error, io::Write};
 
 use clap::Parser;
