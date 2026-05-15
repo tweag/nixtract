@@ -7,7 +7,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: cachix/install-nix-action@v12
+      - uses: actions/checkout@v6
+      - uses: cachix/install-nix-action@v31
       - name: Building package
         run: nix build . --extra-experimental-features "flakes nix-command"
