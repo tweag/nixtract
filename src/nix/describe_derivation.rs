@@ -35,6 +35,7 @@ pub struct ParsedName {
     pub version: String,
 }
 
+#[allow(non_snake_case)]
 #[derive(Deserialize, Serialize, Debug, Eq, PartialEq, Clone, JsonSchema)]
 pub struct NixpkgsMetadata {
     pub description: String,
