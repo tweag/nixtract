@@ -11,6 +11,10 @@
 
 ### Fixed
 - [#53](https://github.com/tweag/nixtract/pull/53) resolve an issue where some derivations were analyzed multiple times
+- [#62](https://github.com/tweag/nixtract/pull/62) allow nixpkgs metadata CPE fields to retain their upstream JSON casing without emitting lint warnings
+
+### Changed
+- [#62](https://github.com/tweag/nixtract/pull/62) update Rust and Nix flake dependencies
 
 ## [0.3.0] - 2024-04-17
 ### Added
