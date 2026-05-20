@@ -2,6 +2,8 @@
 <!-- We follow the Keep a Changelog standard https://keepachangelog.com/en/1.0.0/ -->
 
 ## [Unreleased]
+
+## [0.4.0] - 2026-05-20
 ### Added
 - [#49](https://github.com/tweag/nixtract/pull/49) rewrite describe_derivation to include all found derivations (but actively skip bootstrap packages)
 - [#53](https://github.com/tweag/nixtract/pull/59) & [#60](https://github.com/tweag/nixtract/pull/60) implement CPE and pURL reference
@@ -30,4 +32,6 @@
 ### Changed
 - [#36](https://github.com/tweag/nixtract/pull/36) moved all nixtract configuration options into a single struct passed to the `nixtract` function
 
+[Unreleased]: https://github.com/tweag/nixtract/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/tweag/nixtract/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/tweag/nixtract/compare/v0.2.0...v0.3.0

@@ -1,6 +1,6 @@
 [package]
 name = "nixtract"
-version = "0.3.0"
+version = "0.4.0"
 authors = [
     "Erin van der Veen <nixtract@erinvanderveen.nl>",
     "Guillaume Desforges <guillaume.desforges@tweag.io>",
