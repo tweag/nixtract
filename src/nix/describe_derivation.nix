@@ -50,7 +50,7 @@ in
       broken = (builtins.tryEval (targetValue.meta.broken or false)).value;
       homepage = (builtins.tryEval (targetValue.meta.homepage or "")).value;
       cpe = (builtins.tryEval (targetValue.meta.identifiers.v1.cpe or null)).value;
-      possibleCPEs = (builtins.tryEval (targetValue.meta.identifiers.v1.possibleCPEs or [])).value;
+      possibleCPEs = (builtins.tryEval (map (x: x.cpe) (targetValue.meta.identifiers.v1.possibleCPEs or []))).value;
       purl = (builtins.tryEval (targetValue.meta.identifiers.v1.purl or null)).value;
       purls = (builtins.tryEval (targetValue.meta.identifiers.v1.purls or [])).value;
       licenses = (builtins.tryEval (
