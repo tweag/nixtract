@@ -92,7 +92,7 @@ in
         if nixpkgs.lib.isDerivation value then
           [{
             build_input_type = name;
-            attribute_path = "${targetAttributePath}.drvAttrs.${name}";
+            attribute_path = "${targetAttributePath}.${name}";
             output_path = lib.safePlatformDrvEval targetSystem (drv: drv.outPath) value;
           }]
         else if nixpkgs.lib.isList value then
@@ -101,7 +101,7 @@ in
               if nixpkgs.lib.isDerivation value then
                 [{
                   build_input_type = name;
-                  attribute_path = "${targetAttributePath}.drvAttrs.${name}.${builtins.toString index}";
+                  attribute_path = "${targetAttributePath}.${name}.${builtins.toString index}";
                   output_path = lib.safePlatformDrvEval targetSystem (drv: drv.outPath) value;
                 }]
               else [ ]
@@ -112,8 +112,8 @@ in
       (if runtimeOnly
       then
         (
-          nixpkgs.lib.optional (targetValue ? buildInputs) targetValue.buildInputs
-          ++ nixpkgs.lib.optional (targetValue ? propagatedBuildInputs) targetValue.propagatedBuildInputs
+          nixpkgs.lib.optional (targetValue ? buildInputs) { name = "buildInputs"; value = targetValue.buildInputs; }
+          ++ nixpkgs.lib.optional (targetValue ? propagatedBuildInputs) { name = "propagatedBuildInputs"; value = targetValue.propagatedBuildInputs; }
         )
       else
         nixpkgs.lib.attrsToList targetValue.drvAttrs
