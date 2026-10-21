@@ -2,6 +2,8 @@
 <!-- We follow the Keep a Changelog standard https://keepachangelog.com/en/1.0.0/ -->
 
 ## [Unreleased]
+### Fixed
+- [#67](https://github.com/tweag/nixtract/pull/67) fix cpe output
 
 ## [0.4.1] - 2026-09-09
 ### Fixed
