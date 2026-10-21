@@ -86,7 +86,6 @@ in
       targetValue;
   outputs = map (name: { inherit name; output_path = lib.safePlatformDrvEval targetSystem (drv: drv.outPath) targetValue.${name}; }) (targetValue.outputs or [ ]);
   build_inputs =
-    if targetValue ? outputHash then [ ] else
     nixpkgs.lib.concatMap
       ({ name, value }:
         if nixpkgs.lib.isDerivation value then
