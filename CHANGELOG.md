@@ -7,6 +7,7 @@
 
 ## [0.4.1] - 2026-09-09
 ### Fixed
+- [#68](https://github.com/tweag/nixtract/pull/68) reverts [#52](https://github.com/tweag/nixtract/pull/52) because it breaks legitimate packages.
 - Updates `quinn-proto` to 0.11.16 to address [GHSA-4w2j-m93h-cj5j](https://github.com/advisories/GHSA-4w2j-m93h-cj5j).
 
 ### Changed
