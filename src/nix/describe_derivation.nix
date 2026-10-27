@@ -49,7 +49,9 @@ in
       pname =
         let p = (builtins.tryEval (targetValue.pname or parsedName.name)).value;
         in if p == null then parsedName.name else p;
-      version = (builtins.tryEval (targetValue.version or "")).value;
+      version =
+        let v = (builtins.tryEval (targetValue.version or "")).value;
+        in if v == null then "" else v;
       broken = (builtins.tryEval (targetValue.meta.broken or false)).value;
       homepage = (builtins.tryEval (targetValue.meta.homepage or "")).value;
       cpe = (builtins.tryEval (targetValue.meta.identifiers.v1.cpe or null)).value;
