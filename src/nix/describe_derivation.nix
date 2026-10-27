@@ -26,10 +26,11 @@ let
 
   # Get target value
   targetValue = lib.getValueAtPath targetFlakePkgs targetAttributePath;
+  parsedName = builtins.parseDrvName targetValue.name
 in
 {
   name = targetValue.name;
-  parsed_name = (builtins.parseDrvName targetValue.name);
+  parsed_name = parsedName;
   attribute_path = targetAttributePath;
 
   src =
@@ -45,7 +46,7 @@ in
   nixpkgs_metadata =
     {
       description = (builtins.tryEval (targetValue.meta.description or "")).value;
-      pname = (builtins.tryEval (targetValue.pname or "")).value or null;
+      pname = (builtins.tryEval (targetValue.pname or parsedName.name)).value or parsedName.name;
       version = (builtins.tryEval (targetValue.version or "")).value;
       broken = (builtins.tryEval (targetValue.meta.broken or false)).value;
       homepage = (builtins.tryEval (targetValue.meta.homepage or "")).value;
