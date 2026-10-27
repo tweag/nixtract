@@ -62,20 +62,19 @@ in
             full_name = l.fullName or "";
           };
         in
-
-        # In case the license attribute is a list
-        if builtins.isList lic
-        then map toEntry lic
-
-        # In case the license is nested, flatten its leaves
-        else if builtins.isAttrs lic && lic ? licenses
-        then map toEntry lic.licenses
-
-        # In case the license attribute is a single attrset, produce a singleton list to be consistent
-        else if builtins.isAttrs lic
-        then [ (toEntry lic) ]
-
-        else null
+          # In case the license attribute is a list
+          if builtins.isList lic
+          then map toEntry lic
+  
+          # In case the license is nested, flatten its leaves
+          else if builtins.isAttrs lic && lic ? licenses
+          then map toEntry lic.licenses
+  
+          # In case the license attribute is a single attrset, produce a singleton list to be consistent
+          else if builtins.isAttrs lic
+          then [ (toEntry lic) ]
+  
+          else null
       )).value;
     };
 
