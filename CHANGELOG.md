@@ -4,7 +4,8 @@
 ## [Unreleased]
 ### Fixed
 - [#67](https://github.com/tweag/nixtract/pull/67) fix cpe output
-
+- [#70](https://github.com/tweag/nixtract/pull/70) fix deserialization issues
+- 
 ## [0.4.1] - 2026-09-09
 ### Fixed
 - Updates `quinn-proto` to 0.11.16 to address [GHSA-4w2j-m93h-cj5j](https://github.com/advisories/GHSA-4w2j-m93h-cj5j).
