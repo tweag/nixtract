@@ -46,7 +46,9 @@ in
   nixpkgs_metadata =
     {
       description = (builtins.tryEval (targetValue.meta.description or "")).value;
-      pname = (builtins.tryEval (targetValue.pname or parsedName.name)).value or parsedName.name;
+      pname =
+        let p = (builtins.tryEval (targetValue.pname or parsedName.name)).value;
+        in if p == null then parsedName.name else p;
       version = (builtins.tryEval (targetValue.version or "")).value;
       broken = (builtins.tryEval (targetValue.meta.broken or false)).value;
       homepage = (builtins.tryEval (targetValue.meta.homepage or "")).value;
